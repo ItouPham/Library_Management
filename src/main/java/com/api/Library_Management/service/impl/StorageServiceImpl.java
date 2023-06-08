@@ -90,4 +90,10 @@ public class StorageServiceImpl implements StorageService{
 		book.setImage(getStoredFilename(bookRequest.getImage(), uuString));
 		store(bookRequest.getImage(), book.getImage());
 	}
+
+	@Override
+	public Path getImage(String fileName) {
+		Path filePath = BOOK_IMAGE_PATH.resolve(fileName);
+		return filePath;
+	}
 }
