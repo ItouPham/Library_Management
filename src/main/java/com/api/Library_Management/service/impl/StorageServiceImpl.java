@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,14 @@ import com.api.Library_Management.exception.StorageException;
 import com.api.Library_Management.exception.StorageFileNotFoundException;
 import com.api.Library_Management.model.request.BookRequest;
 import com.api.Library_Management.service.StorageService;
+import com.api.Library_Management.utils.ConfigReader;
 
 @Service
 public class StorageServiceImpl implements StorageService{
-	private static final String BOOK_IMAGE_PATH_STR = "uploads/images";
-	private static final Path BOOK_IMAGE_PATH = Paths.get(BOOK_IMAGE_PATH_STR);
+//	private static final String BOOK_IMAGE_PATH_STR = "uploads/images";
+//	@Value("${book.image.path}")
+//	public String BOOK_IMAGE_PATH_STR;
+//	private final Path BOOK_IMAGE_PATH = Paths.get(BOOK_IMAGE_PATH_STR);
 
 	@Override
 	public String getStoredFilename(MultipartFile file, String fileName) {
@@ -34,7 +38,7 @@ public class StorageServiceImpl implements StorageService{
 	@Override
 	public void init() {
 		try {
-			Files.createDirectories(BOOK_IMAGE_PATH);
+			Files.createDirectories(Paths.get(ConfigReader.BOOK_IMAGE_PATH_STR));
 		} catch (Exception e) {
 			throw new StorageException("Could not initialize storage", e);
 		}
@@ -42,7 +46,7 @@ public class StorageServiceImpl implements StorageService{
 
 	@Override
 	public Path load(String fileName) {
-		return BOOK_IMAGE_PATH.resolve(fileName);
+		return Paths.get(ConfigReader.BOOK_IMAGE_PATH_STR).resolve(fileName);
 	}
 
 	@Override
@@ -65,8 +69,8 @@ public class StorageServiceImpl implements StorageService{
 			if (file.isEmpty()) {
 				throw new StorageException("Failed to store empty file");
 			}
-			Path destinationFile = BOOK_IMAGE_PATH.resolve(Paths.get(storedFileName)).normalize().toAbsolutePath();
-			if (!destinationFile.getParent().equals(BOOK_IMAGE_PATH.toAbsolutePath())) {
+			Path destinationFile = Paths.get(ConfigReader.BOOK_IMAGE_PATH_STR).resolve(Paths.get(storedFileName)).normalize().toAbsolutePath();
+			if (!destinationFile.getParent().equals(Paths.get(ConfigReader.BOOK_IMAGE_PATH_STR).toAbsolutePath())) {
 				throw new StorageException("Cannot store file outside current directory");
 			}
 			try (InputStream inputStream = file.getInputStream()) {
@@ -80,7 +84,7 @@ public class StorageServiceImpl implements StorageService{
 
 	@Override
 	public void delete(String fileName) throws IOException {
-		Path destinationFile = BOOK_IMAGE_PATH.resolve(Paths.get(fileName)).normalize().toAbsolutePath();
+		Path destinationFile = Paths.get(ConfigReader.BOOK_IMAGE_PATH_STR).resolve(Paths.get(fileName)).normalize().toAbsolutePath();
 		Files.delete(destinationFile);
 	}
 
@@ -94,7 +98,7 @@ public class StorageServiceImpl implements StorageService{
 
 	@Override
 	public Path getImage(String fileName) {
-		Path filePath = BOOK_IMAGE_PATH.resolve(fileName);
+		Path filePath = Paths.get(ConfigReader.BOOK_IMAGE_PATH_STR).resolve(fileName);
 		return filePath;
 	}
 }

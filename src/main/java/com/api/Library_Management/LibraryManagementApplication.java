@@ -14,11 +14,11 @@ public class LibraryManagementApplication {
 		SpringApplication.run(LibraryManagementApplication.class, args);
 	}
 
-	@Bean
-	CommandLineRunner init(StorageService storageService) {
-		return (args -> {
-			storageService.init();
-		});
-	}
+//	@Bean
+//	CommandLineRunner init(StorageService storageService) {
+//		return (args -> {
+//			storageService.init();
+//		});
+//	}
 
 }
