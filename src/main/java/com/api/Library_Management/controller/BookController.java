@@ -1,7 +1,11 @@
 package com.api.Library_Management.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,7 +14,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +22,7 @@ import com.api.Library_Management.model.response.NotificationResponse;
 import com.api.Library_Management.model.response.book.BookResponse;
 import com.api.Library_Management.model.response.book.ListBookResponse;
 import com.api.Library_Management.service.BookService;
+import com.api.Library_Management.service.StorageService;
 import com.api.Library_Management.utils.Logs;
 
 @RestController
@@ -27,6 +31,9 @@ import com.api.Library_Management.utils.Logs;
 public class BookController {
 	@Autowired
 	private BookService bookService;
+	
+	@Autowired
+	private StorageService storageService;
 
 	@GetMapping
 	public ResponseEntity<ListBookResponse> getAllBooks() {
@@ -117,5 +124,16 @@ public class BookController {
 			objBooks.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
 			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
 		}
+	}
+	
+	@GetMapping("bookImage/{fileName}")
+	public ResponseEntity<?> getBookImage(@PathVariable String fileName) throws IOException {
+		byte[] imageData = Files.readAllBytes(storageService.getImage(fileName));
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.valueOf("image/png")).body(imageData);
+	}
+	
+	@GetMapping("test")
+	public String test() {
+		return "Hello, this is test";
 	}
 }

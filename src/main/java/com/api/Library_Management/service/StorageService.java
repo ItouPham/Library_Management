@@ -23,4 +23,6 @@ public interface StorageService {
 	void delete(String fileName) throws IOException;
 
 	void saveBookImage(BookRequest bookRequest, Book book);
+	
+	Path getImage(String fileName);
 }
