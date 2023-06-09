@@ -1,5 +1,6 @@
 package com.api.Library_Management.model.request;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +26,7 @@ public class BookRequest {
 	
 	private MultipartFile image;
 
-	private List<AuthorRequest> authors;
+	private List<AuthorRequest> authors = new ArrayList<>();
 
-	private List<CategoryRequest> categories;
+	private List<CategoryRequest> categories = new ArrayList<>();
 }

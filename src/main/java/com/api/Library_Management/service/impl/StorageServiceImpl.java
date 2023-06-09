@@ -71,6 +71,7 @@ public class StorageServiceImpl implements StorageService{
 			}
 			try (InputStream inputStream = file.getInputStream()) {
 				Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+				System.out.println("URL: " + destinationFile.toFile().toString());
 			}
 		} catch (Exception e) {
 			throw new StorageException("Failed to store file", e);
