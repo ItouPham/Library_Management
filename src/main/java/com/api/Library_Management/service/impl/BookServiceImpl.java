@@ -2,6 +2,7 @@ package com.api.Library_Management.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +17,11 @@ import com.api.Library_Management.model.request.AuthorRequest;
 import com.api.Library_Management.model.request.BookRequest;
 import com.api.Library_Management.model.request.CategoryRequest;
 import com.api.Library_Management.model.response.NotificationResponse;
-import com.api.Library_Management.model.response.author.ObjAuthor;
+import com.api.Library_Management.model.response.book.BookImageResponse;
 import com.api.Library_Management.model.response.book.BookResponse;
 import com.api.Library_Management.model.response.book.ListBookResponse;
 import com.api.Library_Management.model.response.book.ObjBook;
-import com.api.Library_Management.model.response.category.ObjCategory;
+import com.api.Library_Management.model.response.book.ObjBookImage;
 import com.api.Library_Management.repository.AuthorRepository;
 import com.api.Library_Management.repository.BookRepository;
 import com.api.Library_Management.repository.CategoryRepository;
@@ -41,7 +42,7 @@ public class BookServiceImpl implements BookService {
 
 	@Autowired
 	private StorageService storageService;
-
+	
 	@Override
 	public ListBookResponse getAllBooks() {
 		List<ObjBook> listObjBooks = new ArrayList<>();
@@ -118,25 +119,32 @@ public class BookServiceImpl implements BookService {
 			}
 
 			if (!bookRequest.getImage().isEmpty()) {
-				storageService.saveBookImage(bookRequest, book);
+				ObjBookImage objBookImage = storageService.postImageToImgur(bookRequest.getImage());
+				if(objBookImage.getStatus() != 200) {
+					bookResponse.setNotification(new NotificationResponse(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage()));
+					return bookResponse;
+				}
+				BookImageResponse bookImageResponse = responseToEntity(objBookImage.getData());
+				book.setImage(bookImageResponse);
 			}
 
 			book.setCategories(listCategories);
 			book.setAuthors(listAuthors);
-			bookRepository.save(book);
-			BeanUtils.copyProperties(book, objBook);
+			book = bookRepository.save(book);
+			if (book != null) {
+				BeanUtils.copyProperties(book, objBook);
+				bookResponse.setBook(objBook);
+				bookResponse.setNotification(new NotificationResponse(Logs.ADD_BOOK_SUCCESS.getMessage()));
+			} else {
+				bookResponse.setNotification(new NotificationResponse(Logs.ADD_BOOK_UNSUCCESS.getMessage()));
+			}
 
-			bookResponse.setBook(objBook);
-			bookResponse.setNotification(new NotificationResponse(Logs.ADD_BOOK_SUCCESS.getMessage()));
 			return bookResponse;
-
 		} catch (Exception e) {
-
 			e.printStackTrace();
 			bookResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			return bookResponse;
-
 		}
 	}
 
@@ -174,7 +182,7 @@ public class BookServiceImpl implements BookService {
 				}
 
 				if(book.getImage() != null) {
-					storageService.delete(book.getImage());
+//					storageService.delete(book.getImage());
 				}
 				if (!bookRequest.getImage().isEmpty()) {
 					storageService.saveBookImage(bookRequest, book);
@@ -209,7 +217,7 @@ public class BookServiceImpl implements BookService {
 			book = bookRepository.findById(id).orElse(null);
 			if (book != null) {
 				BeanUtils.copyProperties(book, objBook);
-				storageService.delete(book.getImage());
+//				storageService.delete(book.getImage());
 				bookRepository.delete(book);
 				bookResponse.setBook(objBook);
 				bookResponse.setNotification(new NotificationResponse(Logs.DELETE_BOOK_SUCCESS.getMessage()));
@@ -280,5 +288,13 @@ public class BookServiceImpl implements BookService {
 			return listBooksResponse;
 		}
 	}
-
+	
+	private  BookImageResponse responseToEntity(Map<String, Object> response) {
+		BookImageResponse bookImageResponse = new BookImageResponse();
+		bookImageResponse.setDeletehash((String) response.get("deletehash"));
+		bookImageResponse.setName((String) response.get("name"));
+		bookImageResponse.setLink((String) response.get("link"));
+		return bookImageResponse;
+	}
+	
 }

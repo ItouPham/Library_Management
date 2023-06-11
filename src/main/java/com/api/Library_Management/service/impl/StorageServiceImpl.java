@@ -9,18 +9,26 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.exception.StorageException;
 import com.api.Library_Management.exception.StorageFileNotFoundException;
 import com.api.Library_Management.model.request.BookRequest;
+import com.api.Library_Management.model.response.book.ObjBookImage;
 import com.api.Library_Management.service.StorageService;
 import com.api.Library_Management.utils.ConfigReader;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class StorageServiceImpl implements StorageService{
@@ -92,13 +100,29 @@ public class StorageServiceImpl implements StorageService{
 	public void saveBookImage(BookRequest bookRequest, Book book) {
 		UUID uuid = UUID.randomUUID();
 		String uuString = uuid.toString();
-		book.setImage(getStoredFilename(bookRequest.getImage(), uuString));
-		store(bookRequest.getImage(), book.getImage());
+//		book.setImage(getStoredFilename(bookRequest.getImage(), uuString));
+//		store(bookRequest.getImage(), book.getImage());
 	}
 
 	@Override
 	public Path getImage(String fileName) {
 		Path filePath = Paths.get(ConfigReader.BOOK_IMAGE_PATH_STR).resolve(fileName);
 		return filePath;
+	}
+
+	@Override
+	public ObjBookImage postImageToImgur(MultipartFile file) throws IOException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		RestTemplate restTemplate = new RestTemplate();
+		String url = ConfigReader.POST_BOOK_IMAGE_URL;
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+		httpHeaders.set("Authorization", ConfigReader.AUTHORIZATION_TOKEN);
+		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+		map.add("image", file.getBytes());
+		HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(map, httpHeaders);
+		ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+		ObjBookImage bookImageResponse = objectMapper.readValue(response.getBody(), ObjBookImage.class);
+		return bookImageResponse;
 	}
 }

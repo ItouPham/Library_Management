@@ -1,9 +1,7 @@
 package com.api.Library_Management.utils;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @Getter
@@ -21,9 +19,11 @@ public enum Logs {
 	UPDATE_CATEGORY_SUCCESS("Update category successfully"),
 	DELETE_CATEGORY_SUCCESS("Delete category successfully"),
 	ADD_BOOK_SUCCESS("Add book successfully"),
+	ADD_BOOK_UNSUCCESS("Add book unsuccessfully"),
 	BOOK_NOT_EXIST("Book not exist"),
 	UPDATE_BOOK_SUCCESS("Update book successfully"),
-	DELETE_BOOK_SUCCESS("Delete book successfully");
+	DELETE_BOOK_SUCCESS("Delete book successfully"),
+	UPLOAD_IMAGE_UNSUCCESS("Upload image unsuccessfully");
 	
 	private String message;
 	

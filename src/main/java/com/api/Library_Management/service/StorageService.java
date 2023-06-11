@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.model.request.BookRequest;
+import com.api.Library_Management.model.response.book.ObjBookImage;
 
 public interface StorageService {
 	void init();
@@ -25,4 +26,6 @@ public interface StorageService {
 	void saveBookImage(BookRequest bookRequest, Book book);
 	
 	Path getImage(String fileName);
+	
+	ObjBookImage postImageToImgur(MultipartFile file) throws IOException ;
 }

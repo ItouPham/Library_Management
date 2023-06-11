@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
+
+import com.api.Library_Management.model.response.book.BookImageResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +30,7 @@ public class Book {
 	
 	private String totalPages;
 	
-	private String image;
+	private BookImageResponse image;
 	
 	private List<Author> authors;
 	
