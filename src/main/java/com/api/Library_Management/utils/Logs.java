@@ -22,8 +22,10 @@ public enum Logs {
 	ADD_BOOK_UNSUCCESS("Add book unsuccessfully"),
 	BOOK_NOT_EXIST("Book not exist"),
 	UPDATE_BOOK_SUCCESS("Update book successfully"),
+	UPDATE_BOOK_UNSUCCESS("Update book unsuccessfully"),
 	DELETE_BOOK_SUCCESS("Delete book successfully"),
-	UPLOAD_IMAGE_UNSUCCESS("Upload image unsuccessfully");
+	UPLOAD_IMAGE_UNSUCCESS("Upload image unsuccessfully"),
+	DELETE_IMAGE_UNSUCCESS("Delete image unsuccessfully");
 	
 	private String message;
 	

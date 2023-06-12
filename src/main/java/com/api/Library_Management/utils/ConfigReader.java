@@ -9,8 +9,10 @@ import org.springframework.context.annotation.PropertySource;
 public class ConfigReader {
 	public static String BOOK_IMAGE_PATH_STR;
 	public static String AUTHORIZATION_TOKEN;
+	public static String ALBUM_ID;
 	public static String POST_BOOK_IMAGE_URL;
 	public static String GET_BOOK_IMAGE_URL;
+	public static String DELETE_BOOK_IMAGE_URL;
 
 //	public static final Path BOOK_IMAGE_PATH = Paths.get(BOOK_IMAGE_PATH_STR);
 
@@ -23,6 +25,11 @@ public class ConfigReader {
 	private void setAuthorizationToken(String token) {
 		ConfigReader.AUTHORIZATION_TOKEN = token;
 	}
+	
+	@Value("${album.id}")
+	private void setAlbumId(String id) {
+		ConfigReader.ALBUM_ID = id;
+	}
 
 	@Value("${post.book.image.url}")
 	private void setPostBookImageURL(String url) {
@@ -32,5 +39,10 @@ public class ConfigReader {
 	@Value("${get.book.image.url}")
 	private void setGetBookImageURL(String url) {
 		ConfigReader.GET_BOOK_IMAGE_URL = url;
+	}
+	
+	@Value("${delete.book.image.url}")
+	private void setDeleteBookImageURL(String url) {
+		ConfigReader.DELETE_BOOK_IMAGE_URL = url;
 	}
 }

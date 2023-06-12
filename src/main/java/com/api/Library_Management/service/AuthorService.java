@@ -3,7 +3,6 @@ package com.api.Library_Management.service;
 import com.api.Library_Management.model.request.AuthorRequest;
 import com.api.Library_Management.model.response.author.AuthorResponse;
 import com.api.Library_Management.model.response.author.ListAuthorResponse;
-import com.api.Library_Management.model.response.author.ObjAuthor;
 
 public interface AuthorService {
 

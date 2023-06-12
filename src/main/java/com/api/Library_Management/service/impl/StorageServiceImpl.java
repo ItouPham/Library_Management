@@ -13,6 +13,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -111,18 +112,31 @@ public class StorageServiceImpl implements StorageService{
 	}
 
 	@Override
-	public ObjBookImage postImageToImgur(MultipartFile file) throws IOException {
+	public ObjBookImage postImageToImgur(MultipartFile file, BookRequest request) throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		RestTemplate restTemplate = new RestTemplate();
 		String url = ConfigReader.POST_BOOK_IMAGE_URL;
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
 		httpHeaders.set("Authorization", ConfigReader.AUTHORIZATION_TOKEN);
-		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-		map.add("image", file.getBytes());
-		HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(map, httpHeaders);
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		body.add("image", file.getBytes());
+		body.add("album", ConfigReader.ALBUM_ID);
+		body.add("name", request.getName());
+		HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, httpHeaders);
 		ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 		ObjBookImage bookImageResponse = objectMapper.readValue(response.getBody(), ObjBookImage.class);
 		return bookImageResponse;
+	}
+
+	@Override
+	public ResponseEntity<String> deleteImageFromImgur(String deletehash) {
+		RestTemplate restTemplate = new RestTemplate();
+		String url = ConfigReader.DELETE_BOOK_IMAGE_URL + deletehash;
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.set("Authorization", ConfigReader.AUTHORIZATION_TOKEN);
+		HttpEntity<Object> entity = new HttpEntity<Object>(httpHeaders);
+		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE , entity, String.class);
+		return response;
 	}
 }

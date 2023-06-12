@@ -25,8 +25,8 @@ public class BookRequest {
 	private String totalPages;
 	
 	private MultipartFile image;
+	
+	private List<String> authorIds = new ArrayList<>();
 
-	private List<AuthorRequest> authors = new ArrayList<>();
-
-	private List<CategoryRequest> categories = new ArrayList<>();
+	private List<String> categoryIds = new ArrayList<>();
 }

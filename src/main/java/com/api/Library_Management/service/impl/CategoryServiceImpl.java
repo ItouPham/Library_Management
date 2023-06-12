@@ -9,15 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
-import com.api.Library_Management.entity.Author;
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.entity.Category;
-import com.api.Library_Management.model.request.AuthorRequest;
 import com.api.Library_Management.model.request.CategoryRequest;
-import com.api.Library_Management.model.response.NotificationResponse;
-import com.api.Library_Management.model.response.author.AuthorResponse;
-import com.api.Library_Management.model.response.author.ListAuthorResponse;
-import com.api.Library_Management.model.response.author.ObjAuthor;
 import com.api.Library_Management.model.response.category.CategoryResponse;
 import com.api.Library_Management.model.response.category.ListCategoriesResponse;
 import com.api.Library_Management.model.response.category.ObjCategory;
@@ -49,11 +43,11 @@ public class CategoryServiceImpl implements CategoryService {
 				}
 				categoryResponse.setCategories(listCategoriesResponse);
 			}
-			categoryResponse.setNotification(new NotificationResponse(Logs.GET_DATA_SUCCESS.getMessage()));
+			categoryResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
 			return categoryResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			categoryResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			categoryResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return categoryResponse;
 		}
 	}
@@ -68,14 +62,14 @@ public class CategoryServiceImpl implements CategoryService {
 			if (category != null) {
 				BeanUtils.copyProperties(category, objCategory);
 				categoryResponse.setCategory(objCategory);
-				categoryResponse.setNotification(new NotificationResponse(Logs.GET_DATA_SUCCESS.getMessage()));
+				categoryResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
 			} else {
-				categoryResponse.setNotification(new NotificationResponse(Logs.CATEGORY_NOT_EXIST.getMessage()));
+				categoryResponse.setMessage(Logs.CATEGORY_NOT_EXIST.getMessage());
 			}
 			return categoryResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			categoryResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			categoryResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return categoryResponse;
 		}
 	}
@@ -92,12 +86,12 @@ public class CategoryServiceImpl implements CategoryService {
 			BeanUtils.copyProperties(category, objCategory);
 
 			categoryResponse.setCategory(objCategory);
-			categoryResponse.setNotification(new NotificationResponse(Logs.ADD_CATEGORY_SUCCESS.getMessage()));
+			categoryResponse.setMessage(Logs.ADD_CATEGORY_SUCCESS.getMessage());
 			return categoryResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			categoryResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			categoryResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return categoryResponse;
 		}
 	}
@@ -115,15 +109,15 @@ public class CategoryServiceImpl implements CategoryService {
 				BeanUtils.copyProperties(category, objCategory);
 				categoryRepository.save(category);
 				categoryResponse.setCategory(objCategory);
-				categoryResponse.setNotification(new NotificationResponse(Logs.UPDATE_CATEGORY_SUCCESS.getMessage()));
+				categoryResponse.setMessage(Logs.UPDATE_CATEGORY_SUCCESS.getMessage());
 			} else {
-				categoryResponse.setNotification(new NotificationResponse(Logs.CATEGORY_NOT_EXIST.getMessage()));
+				categoryResponse.setMessage(Logs.CATEGORY_NOT_EXIST.getMessage());
 			}
 			return categoryResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			categoryResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			categoryResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return categoryResponse;
 		}
 	}
@@ -147,15 +141,15 @@ public class CategoryServiceImpl implements CategoryService {
 				BeanUtils.copyProperties(category, objCategory);
 				categoryRepository.delete(category);
 				categoryResponse.setCategory(objCategory);
-				categoryResponse.setNotification(new NotificationResponse(Logs.DELETE_CATEGORY_SUCCESS.getMessage()));
+				categoryResponse.setMessage(Logs.DELETE_CATEGORY_SUCCESS.getMessage());
 			} else {
-				categoryResponse.setNotification(new NotificationResponse(Logs.CATEGORY_NOT_EXIST.getMessage()));
+				categoryResponse.setMessage(Logs.CATEGORY_NOT_EXIST.getMessage());
 			}
 			return categoryResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			categoryResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			categoryResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return categoryResponse;
 
 		}

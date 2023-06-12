@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -13,10 +14,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import com.api.Library_Management.entity.Author;
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.entity.Category;
-import com.api.Library_Management.model.request.AuthorRequest;
 import com.api.Library_Management.model.request.BookRequest;
-import com.api.Library_Management.model.request.CategoryRequest;
-import com.api.Library_Management.model.response.NotificationResponse;
 import com.api.Library_Management.model.response.book.BookImageResponse;
 import com.api.Library_Management.model.response.book.BookResponse;
 import com.api.Library_Management.model.response.book.ListBookResponse;
@@ -42,7 +40,7 @@ public class BookServiceImpl implements BookService {
 
 	@Autowired
 	private StorageService storageService;
-	
+
 	@Override
 	public ListBookResponse getAllBooks() {
 		List<ObjBook> listObjBooks = new ArrayList<>();
@@ -55,11 +53,11 @@ public class BookServiceImpl implements BookService {
 				listObjBooks.add(objBook);
 			}
 			listBooksResponse.setBooks(listObjBooks);
-			listBooksResponse.setNotification(new NotificationResponse(Logs.GET_DATA_SUCCESS.getMessage()));
+			listBooksResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
 			return listBooksResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			listBooksResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			listBooksResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return listBooksResponse;
 		}
 	}
@@ -74,14 +72,14 @@ public class BookServiceImpl implements BookService {
 			if (book != null) {
 				BeanUtils.copyProperties(book, objBook);
 				bookResponse.setBook(objBook);
-				bookResponse.setNotification(new NotificationResponse(Logs.GET_DATA_SUCCESS.getMessage()));
+				bookResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
 			} else {
-				bookResponse.setNotification(new NotificationResponse(Logs.BOOK_NOT_EXIST.getMessage()));
+				bookResponse.setMessage(Logs.BOOK_NOT_EXIST.getMessage());
 			}
 			return bookResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			bookResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			bookResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return bookResponse;
 		}
 	}
@@ -98,30 +96,30 @@ public class BookServiceImpl implements BookService {
 		List<Author> listAuthors = new ArrayList<>();
 		try {
 			BeanUtils.copyProperties(bookRequest, book);
-			for (CategoryRequest category : bookRequest.getCategories()) {
-				objCategory = categoryRepository.findById(category.getId()).orElse(null);
+			for (String categoryId : bookRequest.getCategoryIds()) {
+				objCategory = categoryRepository.findById(categoryId).orElse(null);
 				if (objCategory != null) {
 					listCategories.add(objCategory);
 				} else {
-					bookResponse.setNotification(new NotificationResponse(Logs.CATEGORY_NOT_EXIST.getMessage()));
+					bookResponse.setMessage(Logs.CATEGORY_NOT_EXIST.getMessage());
 					return bookResponse;
 				}
 			}
 
-			for (AuthorRequest author : bookRequest.getAuthors()) {
-				objAuthor = authorRepository.findById(author.getId()).orElse(null);
+			for (String authorId : bookRequest.getAuthorIds()) {
+				objAuthor = authorRepository.findById(authorId).orElse(null);
 				if (objAuthor != null) {
 					listAuthors.add(objAuthor);
 				} else {
-					bookResponse.setNotification(new NotificationResponse(Logs.AUTHOR_NOT_EXIST.getMessage()));
+					bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 					return bookResponse;
 				}
 			}
 
 			if (!bookRequest.getImage().isEmpty()) {
-				ObjBookImage objBookImage = storageService.postImageToImgur(bookRequest.getImage());
-				if(objBookImage.getStatus() != 200) {
-					bookResponse.setNotification(new NotificationResponse(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage()));
+				ObjBookImage objBookImage = storageService.postImageToImgur(bookRequest.getImage(), bookRequest);
+				if (objBookImage.getStatus() != 200) {
+					bookResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
 					return bookResponse;
 				}
 				BookImageResponse bookImageResponse = responseToEntity(objBookImage.getData());
@@ -133,16 +131,16 @@ public class BookServiceImpl implements BookService {
 			book = bookRepository.save(book);
 			if (book != null) {
 				BeanUtils.copyProperties(book, objBook);
-				bookResponse.setBook(objBook);
-				bookResponse.setNotification(new NotificationResponse(Logs.ADD_BOOK_SUCCESS.getMessage()));
+				bookResponse.setMessage(Logs.ADD_BOOK_SUCCESS.getMessage());
 			} else {
-				bookResponse.setNotification(new NotificationResponse(Logs.ADD_BOOK_UNSUCCESS.getMessage()));
+				bookResponse.setMessage(Logs.ADD_BOOK_UNSUCCESS.getMessage());
 			}
 
+			bookResponse.setBook(objBook);
 			return bookResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			bookResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			bookResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			return bookResponse;
 		}
@@ -161,46 +159,60 @@ public class BookServiceImpl implements BookService {
 			if (book != null) {
 				BeanUtils.copyProperties(bookRequest, book);
 
-				for (CategoryRequest category : bookRequest.getCategories()) {
-					objCategory = categoryRepository.findById(category.getId()).orElse(null);
+				for (String categoryId : bookRequest.getCategoryIds()) {
+					objCategory = categoryRepository.findById(categoryId).orElse(null);
 					if (objCategory != null) {
 						listCategories.add(objCategory);
 					} else {
-						bookResponse.setNotification(new NotificationResponse(Logs.CATEGORY_NOT_EXIST.getMessage()));
+						bookResponse.setMessage(Logs.CATEGORY_NOT_EXIST.getMessage());
 						return bookResponse;
 					}
 				}
 
-				for (AuthorRequest author : bookRequest.getAuthors()) {
-					objAuthor = authorRepository.findById(author.getId()).orElse(null);
+				for (String authorId : bookRequest.getAuthorIds()) {
+					objAuthor = authorRepository.findById(authorId).orElse(null);
 					if (objAuthor != null) {
 						listAuthors.add(objAuthor);
 					} else {
-						bookResponse.setNotification(new NotificationResponse(Logs.AUTHOR_NOT_EXIST.getMessage()));
+						bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 						return bookResponse;
 					}
 				}
 
-				if(book.getImage() != null) {
-//					storageService.delete(book.getImage());
-				}
 				if (!bookRequest.getImage().isEmpty()) {
-					storageService.saveBookImage(bookRequest, book);
+					ResponseEntity<String> deleteImageResponse = storageService
+							.deleteImageFromImgur(book.getImage().getDeletehash());
+					if (deleteImageResponse.getStatusCodeValue() != 200) {
+						bookResponse.setMessage(Logs.DELETE_IMAGE_UNSUCCESS.getMessage());
+						return bookResponse;
+					}
+					ObjBookImage objBookImage = storageService.postImageToImgur(bookRequest.getImage(), bookRequest);
+					if (objBookImage.getStatus() != 200) {
+						bookResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
+						return bookResponse;
+					}
+					BookImageResponse bookImageResponse = responseToEntity(objBookImage.getData());
+					book.setImage(bookImageResponse);
 				}
 
 				book.setCategories(listCategories);
 				book.setAuthors(listAuthors);
-				bookRepository.save(book);
-				BeanUtils.copyProperties(book, objBook);
-				bookResponse.setBook(objBook);
-				bookResponse.setNotification(new NotificationResponse(Logs.UPDATE_BOOK_SUCCESS.getMessage()));
+				book = bookRepository.save(book);
+				if (book != null) {
+					BeanUtils.copyProperties(book, objBook);
+					bookResponse.setMessage(Logs.UPDATE_BOOK_SUCCESS.getMessage());
+				} else {
+					bookResponse.setMessage(Logs.UPDATE_BOOK_UNSUCCESS.getMessage());
+				}
 			} else {
-				bookResponse.setNotification(new NotificationResponse(Logs.BOOK_NOT_EXIST.getMessage()));
+				bookResponse.setMessage(Logs.BOOK_NOT_EXIST.getMessage());
 			}
+
+			bookResponse.setBook(objBook);
 			return bookResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			bookResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			bookResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			return bookResponse;
 		}
@@ -211,24 +223,28 @@ public class BookServiceImpl implements BookService {
 	@Transactional
 	public BookResponse deleteBook(String id) {
 		BookResponse bookResponse = new BookResponse();
-		ObjBook objBook = new ObjBook();
 		Book book = new Book();
 		try {
 			book = bookRepository.findById(id).orElse(null);
 			if (book != null) {
-				BeanUtils.copyProperties(book, objBook);
-//				storageService.delete(book.getImage());
+				ResponseEntity<String> deleteImageResponse = storageService
+						.deleteImageFromImgur(book.getImage().getDeletehash());
+				if (deleteImageResponse.getStatusCodeValue() != 200) {
+					bookResponse.setMessage(Logs.DELETE_IMAGE_UNSUCCESS.getMessage());
+					return bookResponse;
+				}
 				bookRepository.delete(book);
-				bookResponse.setBook(objBook);
-				bookResponse.setNotification(new NotificationResponse(Logs.DELETE_BOOK_SUCCESS.getMessage()));
+				bookResponse.setMessage(Logs.DELETE_BOOK_SUCCESS.getMessage());
 			} else {
-				bookResponse.setNotification(new NotificationResponse(Logs.BOOK_NOT_EXIST.getMessage()));
+				bookResponse.setMessage(Logs.BOOK_NOT_EXIST.getMessage());
 			}
+
+			bookResponse.setBook(null);
 			return bookResponse;
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			bookResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			bookResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			return bookResponse;
 		}
@@ -249,15 +265,15 @@ public class BookServiceImpl implements BookService {
 					objBooks.add(objBook);
 				}
 				listBooksResponse.setBooks(objBooks);
-				listBooksResponse.setNotification(new NotificationResponse(Logs.GET_DATA_SUCCESS.getMessage()));
+				listBooksResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
 			} else {
-				listBooksResponse.setNotification(new NotificationResponse(Logs.AUTHOR_NOT_EXIST.getMessage()));
+				listBooksResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 			}
 			return listBooksResponse;
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			bookResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			bookResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return listBooksResponse;
 		}
 	}
@@ -277,24 +293,24 @@ public class BookServiceImpl implements BookService {
 					objBooks.add(objBook);
 				}
 				listBooksResponse.setBooks(objBooks);
-				listBooksResponse.setNotification(new NotificationResponse(Logs.GET_DATA_SUCCESS.getMessage()));
+				listBooksResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
 			} else {
-				listBooksResponse.setNotification(new NotificationResponse(Logs.AUTHOR_NOT_EXIST.getMessage()));
+				listBooksResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 			}
 			return listBooksResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			bookResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			bookResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return listBooksResponse;
 		}
 	}
-	
-	private  BookImageResponse responseToEntity(Map<String, Object> response) {
+
+	private BookImageResponse responseToEntity(Map<String, Object> response) {
 		BookImageResponse bookImageResponse = new BookImageResponse();
 		bookImageResponse.setDeletehash((String) response.get("deletehash"));
 		bookImageResponse.setName((String) response.get("name"));
 		bookImageResponse.setLink((String) response.get("link"));
 		return bookImageResponse;
 	}
-	
+
 }

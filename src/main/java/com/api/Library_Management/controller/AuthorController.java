@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.Library_Management.model.request.AuthorRequest;
-import com.api.Library_Management.model.response.NotificationResponse;
 import com.api.Library_Management.model.response.author.AuthorResponse;
 import com.api.Library_Management.model.response.author.ListAuthorResponse;
 import com.api.Library_Management.service.AuthorService;
@@ -36,7 +35,7 @@ public class AuthorController {
 			return new ResponseEntity<ListAuthorResponse>(objAuthor, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			objAuthor.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<ListAuthorResponse>(objAuthor, HttpStatus.OK);
 		}
 	}
@@ -49,7 +48,7 @@ public class AuthorController {
 			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			objAuthor.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
 		}
 	}
@@ -62,7 +61,7 @@ public class AuthorController {
 			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			objAuthor.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
 		}
 	}
@@ -76,7 +75,7 @@ public class AuthorController {
 			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			objAuthor.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
 		}
 	}
@@ -89,7 +88,7 @@ public class AuthorController {
 			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			objAuthor.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
 		}
 	}

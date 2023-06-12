@@ -12,7 +12,6 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import com.api.Library_Management.entity.Author;
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.model.request.AuthorRequest;
-import com.api.Library_Management.model.response.NotificationResponse;
 import com.api.Library_Management.model.response.author.AuthorResponse;
 import com.api.Library_Management.model.response.author.ListAuthorResponse;
 import com.api.Library_Management.model.response.author.ObjAuthor;
@@ -43,12 +42,12 @@ public class AuthorServiceImpl implements AuthorService {
 					listAuthorResponse.add(objAuthor);
 				}
 				authorResponse.setAuthors(listAuthorResponse);
-				authorResponse.setNotification(new NotificationResponse(Logs.GET_DATA_SUCCESS.getMessage()));
+				authorResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
 			}
 			return authorResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			authorResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return authorResponse;
 		}
 	}
@@ -63,14 +62,14 @@ public class AuthorServiceImpl implements AuthorService {
 			if (author != null) {
 				BeanUtils.copyProperties(author, objAuthor);
 				authorResponse.setAuthor(objAuthor);
-				authorResponse.setNotification(new NotificationResponse(Logs.GET_DATA_SUCCESS.getMessage()));
+				authorResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
 			} else {
-				authorResponse.setNotification(new NotificationResponse(Logs.AUTHOR_NOT_EXIST.getMessage()));
+				authorResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 			}
 			return authorResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			authorResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return authorResponse;
 		}
 	}
@@ -86,12 +85,12 @@ public class AuthorServiceImpl implements AuthorService {
 			authorRepository.save(author);
 			BeanUtils.copyProperties(author, objAuthor);
 			authorResponse.setAuthor(objAuthor);
-			authorResponse.setNotification(new NotificationResponse(Logs.ADD_AUTHOR_SUCCESS.getMessage()));
+			authorResponse.setMessage(Logs.ADD_AUTHOR_SUCCESS.getMessage());
 			return authorResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			authorResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return authorResponse;
 		}
 	}
@@ -109,15 +108,15 @@ public class AuthorServiceImpl implements AuthorService {
 				BeanUtils.copyProperties(author, objAuthor);
 				authorRepository.save(author);
 				authorResponse.setAuthor(objAuthor);
-				authorResponse.setNotification(new NotificationResponse(Logs.UPDATE_AUTHOR_SUCCESS.getMessage()));
+				authorResponse.setMessage(Logs.UPDATE_AUTHOR_SUCCESS.getMessage());
 			} else {
-				authorResponse.setNotification(new NotificationResponse(Logs.AUTHOR_NOT_EXIST.getMessage()));
+				authorResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 			}
 			return authorResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			authorResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return authorResponse;
 		}
 	}
@@ -141,15 +140,15 @@ public class AuthorServiceImpl implements AuthorService {
 				BeanUtils.copyProperties(author, objAuthor);
 				authorRepository.delete(author);
 				authorResponse.setAuthor(objAuthor);
-				authorResponse.setNotification(new NotificationResponse(Logs.DELETE_AUTHOR_SUCCESS.getMessage()));
+				authorResponse.setMessage(Logs.DELETE_AUTHOR_SUCCESS.getMessage());
 			} else {
-				authorResponse.setNotification(new NotificationResponse(Logs.AUTHOR_NOT_EXIST.getMessage()));
+				authorResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 			}
 			return authorResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			authorResponse.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return authorResponse;
 		}
 	}

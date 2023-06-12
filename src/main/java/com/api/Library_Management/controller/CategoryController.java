@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.api.Library_Management.model.request.AuthorRequest;
 import com.api.Library_Management.model.request.CategoryRequest;
-import com.api.Library_Management.model.response.NotificationResponse;
 import com.api.Library_Management.model.response.category.CategoryResponse;
 import com.api.Library_Management.model.response.category.ListCategoriesResponse;
 import com.api.Library_Management.service.CategoryService;
@@ -37,7 +35,7 @@ public class CategoryController {
 			return new ResponseEntity<ListCategoriesResponse>(listCategories, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			listCategories.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			listCategories.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<ListCategoriesResponse>(listCategories, HttpStatus.OK);
 		}
 	}
@@ -50,7 +48,7 @@ public class CategoryController {
 			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			category.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			category.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
 		}
 	}
@@ -63,7 +61,7 @@ public class CategoryController {
 			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			category.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			category.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
 
 		}
@@ -78,7 +76,7 @@ public class CategoryController {
 			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			category.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			category.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
 		}
 	}
@@ -91,7 +89,7 @@ public class CategoryController {
 			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			category.setNotification(new NotificationResponse(Logs.ERROR_SYSTEM.getMessage()));
+			category.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
 		}
 	}
