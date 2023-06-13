@@ -1,11 +1,16 @@
 package com.api.Library_Management.service.impl;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +30,7 @@ import com.api.Library_Management.repository.BookRepository;
 import com.api.Library_Management.repository.CategoryRepository;
 import com.api.Library_Management.service.BookService;
 import com.api.Library_Management.service.StorageService;
+import com.api.Library_Management.utils.DateUtil;
 import com.api.Library_Management.utils.Logs;
 
 @Service
@@ -42,16 +48,24 @@ public class BookServiceImpl implements BookService {
 	private StorageService storageService;
 
 	@Override
-	public ListBookResponse getAllBooks() {
+	public ListBookResponse getAllBooks(int page, int size) {
 		List<ObjBook> listObjBooks = new ArrayList<>();
 		ListBookResponse listBooksResponse = new ListBookResponse();
 		try {
-			List<Book> books = bookRepository.findAll();
+			if(page != 0) {
+				page--;
+			}
+			Pageable paging = PageRequest.of(page, size);
+			Page<Book> books = bookRepository.findByOrderByCreatedDateDesc(paging);
 			for (Book book : books) {
 				ObjBook objBook = new ObjBook();
 				BeanUtils.copyProperties(book, objBook);
 				listObjBooks.add(objBook);
 			}
+			
+			listBooksResponse.setCurrentPage(books.getNumber() + 1);
+			listBooksResponse.setTotalItems(books.getTotalElements());
+			listBooksResponse.setTotalPages(books.getTotalPages());
 			listBooksResponse.setBooks(listObjBooks);
 			listBooksResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
 			return listBooksResponse;
@@ -63,7 +77,7 @@ public class BookServiceImpl implements BookService {
 	}
 
 	@Override
-	public BookResponse getBookById(String id) {
+	public ResponseEntity<?> getBookById(String id) {
 		BookResponse bookResponse = new BookResponse();
 		ObjBook objBook = new ObjBook();
 		Book book = new Book();
@@ -73,14 +87,15 @@ public class BookServiceImpl implements BookService {
 				BeanUtils.copyProperties(book, objBook);
 				bookResponse.setBook(objBook);
 				bookResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
+				return new ResponseEntity<>(bookResponse,HttpStatus.OK);
 			} else {
 				bookResponse.setMessage(Logs.BOOK_NOT_EXIST.getMessage());
+				return new ResponseEntity<>(bookResponse,HttpStatus.NOT_FOUND);
 			}
-			return bookResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
 			bookResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return bookResponse;
+			return new ResponseEntity<>(bookResponse,HttpStatus.OK);
 		}
 	}
 
@@ -125,7 +140,7 @@ public class BookServiceImpl implements BookService {
 				BookImageResponse bookImageResponse = responseToEntity(objBookImage.getData());
 				book.setImage(bookImageResponse);
 			}
-
+			book.setCreatedDate(DateUtil.formatDate(ZonedDateTime.now()));
 			book.setCategories(listCategories);
 			book.setAuthors(listAuthors);
 			book = bookRepository.save(book);

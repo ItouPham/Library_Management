@@ -28,7 +28,9 @@ public class Book {
 	
 	private String language; 
 	
-	private String totalPages;
+	private String pageNumbers;
+	
+	private String createdDate;
 	
 	private BookImageResponse image;
 	

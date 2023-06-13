@@ -7,6 +7,9 @@ import lombok.Data;
 @Data
 public class ListBookResponse {
 	private List<ObjBook> books;
+	private int currentPage;
+	private long totalItems;
+	private int totalPages;
 	private String message;
 
 }

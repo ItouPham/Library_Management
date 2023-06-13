@@ -1,14 +1,16 @@
 package com.api.Library_Management.service;
 
+import org.springframework.http.ResponseEntity;
+
 import com.api.Library_Management.model.request.BookRequest;
 import com.api.Library_Management.model.response.book.BookResponse;
 import com.api.Library_Management.model.response.book.ListBookResponse;
 
 public interface BookService {
 
-	ListBookResponse getAllBooks();
+	ListBookResponse getAllBooks(int page, int size);
 
-	BookResponse getBookById(String id);
+	ResponseEntity<?> getBookById(String id);
 
 	BookResponse createNewBook(BookRequest bookRequest);
 

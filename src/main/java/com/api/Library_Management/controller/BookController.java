@@ -36,15 +36,16 @@ import com.api.Library_Management.utils.Logs;
 public class BookController {
 	@Autowired
 	private BookService bookService;
-	
+
 	@Autowired
 	private StorageService storageService;
 
 	@GetMapping
-	public ResponseEntity<ListBookResponse> getAllBooks() {
+	public ResponseEntity<ListBookResponse> getAllBooks(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
 		ListBookResponse objBooks = new ListBookResponse();
 		try {
-			objBooks = bookService.getAllBooks();
+			objBooks = bookService.getAllBooks(page,size);
 			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -53,17 +54,9 @@ public class BookController {
 		}
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<BookResponse> getBookById(@PathVariable String id) {
-		BookResponse objBook = new BookResponse();
-		try {
-			objBook = bookService.getBookById(id);
-			return new ResponseEntity<BookResponse>(objBook, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objBook.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<BookResponse>(objBook, HttpStatus.OK);
-		}
+	@GetMapping("getById/{id}")
+	public ResponseEntity<?> getBookById(@PathVariable String id) {
+		return bookService.getBookById(id);
 	}
 
 	@PostMapping
@@ -117,7 +110,7 @@ public class BookController {
 			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
 		}
 	}
-	
+
 	@GetMapping("/category/{id}")
 	public ResponseEntity<ListBookResponse> getBooksByCategoryId(@PathVariable String id) {
 		ListBookResponse objBooks = new ListBookResponse();
@@ -130,13 +123,13 @@ public class BookController {
 			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
 		}
 	}
-	
+
 	@GetMapping("bookImage/{fileName}")
 	public ResponseEntity<?> getBookImage(@PathVariable String fileName) throws IOException {
 		byte[] imageData = Files.readAllBytes(storageService.getImage(fileName));
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.valueOf("image/png")).body(imageData);
 	}
-	
+
 	@PostMapping("test")
 	public ResponseEntity<?> test(@RequestParam String deletehash) throws IOException {
 		RestTemplate restTemplate = new RestTemplate();
@@ -144,7 +137,7 @@ public class BookController {
 		HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.set("Authorization", ConfigReader.AUTHORIZATION_TOKEN);
 		HttpEntity<Object> entity = new HttpEntity<Object>(httpHeaders);
-		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE , entity, String.class);
+		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
 		return response;
 	}
 }

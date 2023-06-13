@@ -2,6 +2,8 @@ package com.api.Library_Management.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.api.Library_Management.entity.Author;
@@ -13,5 +15,7 @@ public interface BookRepository extends MongoRepository<Book, String> {
 	List<Book> findByAuthors(Author author);
 
 	List<Book> findByCategories(Category category);
+	
+	Page<Book> findByOrderByCreatedDateDesc(Pageable pageable);
 
 }
