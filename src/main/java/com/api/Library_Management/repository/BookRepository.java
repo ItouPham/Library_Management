@@ -13,8 +13,10 @@ import com.api.Library_Management.entity.Category;
 public interface BookRepository extends MongoRepository<Book, String> {
 
 	List<Book> findByAuthors(Author author);
-
+	
 	List<Book> findByCategories(Category category);
+
+	Page<Book> findByCategoriesOrderByCreatedDateDesc(Category category, Pageable pageable);
 	
 	Page<Book> findByOrderByCreatedDateDesc(Pageable pageable);
 

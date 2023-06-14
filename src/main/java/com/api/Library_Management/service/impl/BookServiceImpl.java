@@ -52,7 +52,7 @@ public class BookServiceImpl implements BookService {
 		List<ObjBook> listObjBooks = new ArrayList<>();
 		ListBookResponse listBooksResponse = new ListBookResponse();
 		try {
-			if(page != 0) {
+			if (page != 0) {
 				page--;
 			}
 			Pageable paging = PageRequest.of(page, size);
@@ -62,7 +62,8 @@ public class BookServiceImpl implements BookService {
 				BeanUtils.copyProperties(book, objBook);
 				listObjBooks.add(objBook);
 			}
-			
+			List<Category> categories = categoryRepository.findAll();
+			listBooksResponse.setCategories(categories);
 			listBooksResponse.setCurrentPage(books.getNumber() + 1);
 			listBooksResponse.setTotalItems(books.getTotalElements());
 			listBooksResponse.setTotalPages(books.getTotalPages());
@@ -87,15 +88,15 @@ public class BookServiceImpl implements BookService {
 				BeanUtils.copyProperties(book, objBook);
 				bookResponse.setBook(objBook);
 				bookResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
-				return new ResponseEntity<>(bookResponse,HttpStatus.OK);
+				return new ResponseEntity<>(bookResponse, HttpStatus.OK);
 			} else {
 				bookResponse.setMessage(Logs.BOOK_NOT_EXIST.getMessage());
-				return new ResponseEntity<>(bookResponse,HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(bookResponse, HttpStatus.NOT_FOUND);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			bookResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<>(bookResponse,HttpStatus.OK);
+			return new ResponseEntity<>(bookResponse, HttpStatus.OK);
 		}
 	}
 
@@ -294,29 +295,40 @@ public class BookServiceImpl implements BookService {
 	}
 
 	@Override
-	public ListBookResponse getBooksByCategoryId(String id) {
+	public ResponseEntity<?> getBooksByCategoryId(String id, int page, int size) {
 		ListBookResponse listBooksResponse = new ListBookResponse();
 		BookResponse bookResponse = new BookResponse();
 		List<ObjBook> objBooks = new ArrayList<>();
 		try {
 			Category category = categoryRepository.findById(id).orElse(null);
 			if (category != null) {
-				List<Book> books = bookRepository.findByCategories(category);
+
+				if (page != 0) {
+					page--;
+				}
+				Pageable paging = PageRequest.of(page, size);
+				Page<Book> books = bookRepository.findByCategoriesOrderByCreatedDateDesc(category, paging);
 				for (Book book : books) {
 					ObjBook objBook = new ObjBook();
 					BeanUtils.copyProperties(book, objBook);
 					objBooks.add(objBook);
 				}
+				List<Category> categories = categoryRepository.findAll();
+				listBooksResponse.setCategories(categories);
+				listBooksResponse.setCurrentPage(books.getNumber() + 1);
+				listBooksResponse.setTotalItems(books.getTotalElements());
+				listBooksResponse.setTotalPages(books.getTotalPages());
 				listBooksResponse.setBooks(objBooks);
 				listBooksResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
+				return new ResponseEntity<>(listBooksResponse, HttpStatus.OK);
 			} else {
-				listBooksResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
+				listBooksResponse.setMessage(Logs.CATEGORY_NOT_EXIST.getMessage());
+				return new ResponseEntity<>(listBooksResponse, HttpStatus.NOT_FOUND);
 			}
-			return listBooksResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
 			bookResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return listBooksResponse;
+			return new ResponseEntity<>(listBooksResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

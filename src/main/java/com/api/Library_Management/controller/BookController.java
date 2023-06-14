@@ -45,7 +45,7 @@ public class BookController {
 			@RequestParam(defaultValue = "10") int size) {
 		ListBookResponse objBooks = new ListBookResponse();
 		try {
-			objBooks = bookService.getAllBooks(page,size);
+			objBooks = bookService.getAllBooks(page, size);
 			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -112,15 +112,15 @@ public class BookController {
 	}
 
 	@GetMapping("/category/{id}")
-	public ResponseEntity<ListBookResponse> getBooksByCategoryId(@PathVariable String id) {
+	public ResponseEntity<?> getBooksByCategoryId(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size, @PathVariable String id) {
 		ListBookResponse objBooks = new ListBookResponse();
 		try {
-			objBooks = bookService.getBooksByCategoryId(id);
-			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
+			return bookService.getBooksByCategoryId(id,page,size);
 		} catch (Exception e) {
 			e.printStackTrace();
 			objBooks.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
+			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

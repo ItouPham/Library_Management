@@ -20,5 +20,5 @@ public interface BookService {
 
 	ListBookResponse getBooksByAuthorId(String id);
 
-	ListBookResponse getBooksByCategoryId(String id);
+	ResponseEntity<?> getBooksByCategoryId(String id, int page, int size);
 }
