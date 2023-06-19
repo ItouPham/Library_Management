@@ -79,13 +79,23 @@ public class AuthorServiceImpl implements AuthorService {
 	public AuthorResponse createNewAuthor(AuthorRequest authorRequest) {
 		AuthorResponse authorResponse = new AuthorResponse();
 		ObjAuthor objAuthor = new ObjAuthor();
+		Author savedAuthor = new Author();
 		try {
-			Author author = new Author();
-			BeanUtils.copyProperties(authorRequest, author);
-			authorRepository.save(author);
-			BeanUtils.copyProperties(author, objAuthor);
-			authorResponse.setAuthor(objAuthor);
-			authorResponse.setMessage(Logs.ADD_AUTHOR_SUCCESS.getMessage());
+			Author author = authorRepository.findByName(authorRequest.getName()).orElse(null);
+			if(author != null) {
+				authorResponse.setMessage(Logs.AUTHOR_HAS_EXISTED.getMessage());
+				return authorResponse;
+			} else {				
+				BeanUtils.copyProperties(authorRequest, savedAuthor);
+				savedAuthor = authorRepository.save(savedAuthor);
+				if(savedAuthor != null) {
+					BeanUtils.copyProperties(savedAuthor, objAuthor);
+					authorResponse.setAuthor(objAuthor);
+					authorResponse.setMessage(Logs.ADD_AUTHOR_SUCCESS.getMessage());					
+				} else {
+					authorResponse.setMessage(Logs.ADD_AUTHOR_UNSUCCESS.getMessage());
+				}
+			}
 			return authorResponse;
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -22,7 +22,7 @@ public class BookRequest {
 	
 	private String language;
 
-	private String totalPages;
+	private String pageNumbers;
 	
 	private MultipartFile image;
 	

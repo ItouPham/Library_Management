@@ -100,59 +100,65 @@ public class BookServiceImpl implements BookService {
 		}
 	}
 
+	@SuppressWarnings("null")
 	@Override
 	@Transactional
 	public BookResponse createNewBook(BookRequest bookRequest) {
 		BookResponse bookResponse = new BookResponse();
 		ObjBook objBook = new ObjBook();
-		Book book = new Book();
+		Book savedBook = new Book();
 		Category objCategory = new Category();
 		Author objAuthor = new Author();
 		List<Category> listCategories = new ArrayList<>();
 		List<Author> listAuthors = new ArrayList<>();
 		try {
-			BeanUtils.copyProperties(bookRequest, book);
-			for (String categoryId : bookRequest.getCategoryIds()) {
-				objCategory = categoryRepository.findById(categoryId).orElse(null);
-				if (objCategory != null) {
-					listCategories.add(objCategory);
-				} else {
-					bookResponse.setMessage(Logs.CATEGORY_NOT_EXIST.getMessage());
-					return bookResponse;
-				}
-			}
-
-			for (String authorId : bookRequest.getAuthorIds()) {
-				objAuthor = authorRepository.findById(authorId).orElse(null);
-				if (objAuthor != null) {
-					listAuthors.add(objAuthor);
-				} else {
-					bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
-					return bookResponse;
-				}
-			}
-
-			if (!bookRequest.getImage().isEmpty()) {
-				ObjBookImage objBookImage = storageService.postImageToImgur(bookRequest.getImage(), bookRequest);
-				if (objBookImage.getStatus() != 200) {
-					bookResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
-					return bookResponse;
-				}
-				BookImageResponse bookImageResponse = responseToEntity(objBookImage.getData());
-				book.setImage(bookImageResponse);
-			}
-			book.setCreatedDate(DateUtil.formatDate(ZonedDateTime.now()));
-			book.setCategories(listCategories);
-			book.setAuthors(listAuthors);
-			book = bookRepository.save(book);
+			Book book = bookRepository.findByName(bookRequest.getName()).orElse(null);
 			if (book != null) {
-				BeanUtils.copyProperties(book, objBook);
-				bookResponse.setMessage(Logs.ADD_BOOK_SUCCESS.getMessage());
+				bookResponse.setMessage(Logs.BOOK_HAS_EXISTED.getMessage());
+				return bookResponse;
 			} else {
-				bookResponse.setMessage(Logs.ADD_BOOK_UNSUCCESS.getMessage());
-			}
+				BeanUtils.copyProperties(bookRequest, savedBook);
+				for (String categoryId : bookRequest.getCategoryIds()) {
+					objCategory = categoryRepository.findById(categoryId).orElse(null);
+					if (objCategory != null) {
+						listCategories.add(objCategory);
+					} else {
+						bookResponse.setMessage(Logs.CATEGORY_NOT_EXIST.getMessage());
+						return bookResponse;
+					}
+				}
 
-			bookResponse.setBook(objBook);
+				for (String authorId : bookRequest.getAuthorIds()) {
+					objAuthor = authorRepository.findById(authorId).orElse(null);
+					if (objAuthor != null) {
+						listAuthors.add(objAuthor);
+					} else {
+						bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
+						return bookResponse;
+					}
+				}
+
+				if (!bookRequest.getImage().isEmpty()) {
+					ObjBookImage objBookImage = storageService.postImageToImgur(bookRequest.getImage(), bookRequest);
+					if (objBookImage.getStatus() != 200) {
+						bookResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
+						return bookResponse;
+					}
+					BookImageResponse bookImageResponse = responseToEntity(objBookImage.getData());
+					savedBook.setImage(bookImageResponse);
+				}
+				savedBook.setCreatedDate(DateUtil.formatDate(ZonedDateTime.now()));
+				savedBook.setCategories(listCategories);
+				savedBook.setAuthors(listAuthors);
+				savedBook = bookRepository.save(savedBook);
+				if (savedBook != null) {
+					BeanUtils.copyProperties(savedBook, objBook);
+					bookResponse.setMessage(Logs.ADD_BOOK_SUCCESS.getMessage());
+					bookResponse.setBook(objBook);
+				} else {
+					bookResponse.setMessage(Logs.ADD_BOOK_UNSUCCESS.getMessage());
+				}
+			}
 			return bookResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
