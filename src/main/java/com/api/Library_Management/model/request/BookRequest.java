@@ -26,6 +26,10 @@ public class BookRequest {
 	
 	private MultipartFile image;
 	
+	private String bookCover;
+	
+	private String shortDescription;
+	
 	private List<String> authorIds = new ArrayList<>();
 
 	private List<String> categoryIds = new ArrayList<>();

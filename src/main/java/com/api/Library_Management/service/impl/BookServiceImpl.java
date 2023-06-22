@@ -19,6 +19,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import com.api.Library_Management.entity.Author;
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.entity.Category;
+import com.api.Library_Management.model.bean.ObjBeanAuthor;
 import com.api.Library_Management.model.request.BookRequest;
 import com.api.Library_Management.model.response.book.BookImageResponse;
 import com.api.Library_Management.model.response.book.BookResponse;
@@ -110,7 +111,8 @@ public class BookServiceImpl implements BookService {
 		Category objCategory = new Category();
 		Author objAuthor = new Author();
 		List<Category> listCategories = new ArrayList<>();
-		List<Author> listAuthors = new ArrayList<>();
+		List<ObjBeanAuthor> listAuthors = new ArrayList<>();
+		ObjBeanAuthor objBeanAuthor = new ObjBeanAuthor();
 		try {
 			Book book = bookRepository.findByName(bookRequest.getName()).orElse(null);
 			if (book != null) {
@@ -131,7 +133,9 @@ public class BookServiceImpl implements BookService {
 				for (String authorId : bookRequest.getAuthorIds()) {
 					objAuthor = authorRepository.findById(authorId).orElse(null);
 					if (objAuthor != null) {
-						listAuthors.add(objAuthor);
+						objBeanAuthor.setId(authorId);
+						objBeanAuthor.setName(objAuthor.getName());;
+						listAuthors.add(objBeanAuthor);
 					} else {
 						bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 						return bookResponse;
@@ -175,7 +179,8 @@ public class BookServiceImpl implements BookService {
 		Category objCategory = new Category();
 		Author objAuthor = new Author();
 		List<Category> listCategories = new ArrayList<>();
-		List<Author> listAuthors = new ArrayList<>();
+		List<ObjBeanAuthor> listAuthors = new ArrayList<>();
+		ObjBeanAuthor objBeanAuthor = new ObjBeanAuthor();
 		try {
 			Book book = bookRepository.findById(id).orElse(null);
 			if (book != null) {
@@ -194,7 +199,9 @@ public class BookServiceImpl implements BookService {
 				for (String authorId : bookRequest.getAuthorIds()) {
 					objAuthor = authorRepository.findById(authorId).orElse(null);
 					if (objAuthor != null) {
-						listAuthors.add(objAuthor);
+						objBeanAuthor.setId(authorId);
+						objBeanAuthor.setName(objAuthor.getName());
+						listAuthors.add(objBeanAuthor);
 					} else {
 						bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 						return bookResponse;

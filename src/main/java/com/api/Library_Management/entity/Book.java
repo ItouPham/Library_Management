@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.api.Library_Management.model.bean.ObjBeanAuthor;
 import com.api.Library_Management.model.response.book.BookImageResponse;
 
 import lombok.AllArgsConstructor;
@@ -34,7 +35,11 @@ public class Book {
 	
 	private BookImageResponse image;
 	
-	private List<Author> authors;
+	private String bookCover;
+	
+	private String shortDescription;
+	
+	private List<ObjBeanAuthor> authors;
 	
 	private List<Category> categories;
 	
