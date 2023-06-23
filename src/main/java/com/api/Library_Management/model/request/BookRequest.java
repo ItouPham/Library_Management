@@ -30,7 +30,7 @@ public class BookRequest {
 	
 	private String shortDescription;
 	
-	private List<String> authorIds = new ArrayList<>();
+	private String authorId;
 
 	private List<String> categoryIds = new ArrayList<>();
 }

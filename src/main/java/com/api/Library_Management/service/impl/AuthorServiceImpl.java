@@ -11,6 +11,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.api.Library_Management.entity.Author;
 import com.api.Library_Management.entity.Book;
+import com.api.Library_Management.model.bean.ObjBeanAuthor;
 import com.api.Library_Management.model.request.AuthorRequest;
 import com.api.Library_Management.model.response.author.AuthorResponse;
 import com.api.Library_Management.model.response.author.ListAuthorResponse;
@@ -140,10 +141,15 @@ public class AuthorServiceImpl implements AuthorService {
 		try {
 			author = authorRepository.findById(id).orElse(null);
 			if (author != null) {
-				List<Book> books = bookRepository.findByAuthors(author);
+				ObjBeanAuthor objBeanAuthor = new ObjBeanAuthor(author.getId(),author.getName());
+//				List<Book> books = bookRepository.findByAuthorName(id);
+				List<Book> books = null;
 				if (books != null) {
 					for (Book book : books) {
-						book.getAuthors().removeIf(a -> a.getId().equals(id));
+//						book.getAuthors().removeIf(a -> a.getId().equals(id));
+						if(book.getAuthor().getId().equals(id)) {
+							book.setAuthor(new ObjBeanAuthor("",""));
+						}
 					}
 					bookRepository.saveAll(books);
 				}

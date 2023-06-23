@@ -19,9 +19,9 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import com.api.Library_Management.entity.Author;
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.entity.Category;
+import com.api.Library_Management.model.bean.ObjBeanBookImage;
 import com.api.Library_Management.model.bean.ObjBeanAuthor;
 import com.api.Library_Management.model.request.BookRequest;
-import com.api.Library_Management.model.response.book.BookImageResponse;
 import com.api.Library_Management.model.response.book.BookResponse;
 import com.api.Library_Management.model.response.book.ListBookResponse;
 import com.api.Library_Management.model.response.book.ObjBook;
@@ -111,7 +111,6 @@ public class BookServiceImpl implements BookService {
 		Category objCategory = new Category();
 		Author objAuthor = new Author();
 		List<Category> listCategories = new ArrayList<>();
-		List<ObjBeanAuthor> listAuthors = new ArrayList<>();
 		ObjBeanAuthor objBeanAuthor = new ObjBeanAuthor();
 		try {
 			Book book = bookRepository.findByName(bookRequest.getName()).orElse(null);
@@ -130,16 +129,14 @@ public class BookServiceImpl implements BookService {
 					}
 				}
 
-				for (String authorId : bookRequest.getAuthorIds()) {
-					objAuthor = authorRepository.findById(authorId).orElse(null);
-					if (objAuthor != null) {
-						objBeanAuthor.setId(authorId);
-						objBeanAuthor.setName(objAuthor.getName());;
-						listAuthors.add(objBeanAuthor);
-					} else {
-						bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
-						return bookResponse;
-					}
+				objAuthor = authorRepository.findById(bookRequest.getAuthorId()).orElse(null);
+				if (objAuthor != null) {
+					objBeanAuthor.setId(objAuthor.getId());
+					objBeanAuthor.setName(objAuthor.getName());
+					;
+				} else {
+					bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
+					return bookResponse;
 				}
 
 				if (!bookRequest.getImage().isEmpty()) {
@@ -148,12 +145,12 @@ public class BookServiceImpl implements BookService {
 						bookResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
 						return bookResponse;
 					}
-					BookImageResponse bookImageResponse = responseToEntity(objBookImage.getData());
+					ObjBeanBookImage bookImageResponse = responseToEntity(objBookImage.getData());
 					savedBook.setImage(bookImageResponse);
 				}
 				savedBook.setCreatedDate(DateUtil.formatDate(ZonedDateTime.now()));
 				savedBook.setCategories(listCategories);
-				savedBook.setAuthors(listAuthors);
+				savedBook.setAuthor(objBeanAuthor);
 				savedBook = bookRepository.save(savedBook);
 				if (savedBook != null) {
 					BeanUtils.copyProperties(savedBook, objBook);
@@ -179,7 +176,6 @@ public class BookServiceImpl implements BookService {
 		Category objCategory = new Category();
 		Author objAuthor = new Author();
 		List<Category> listCategories = new ArrayList<>();
-		List<ObjBeanAuthor> listAuthors = new ArrayList<>();
 		ObjBeanAuthor objBeanAuthor = new ObjBeanAuthor();
 		try {
 			Book book = bookRepository.findById(id).orElse(null);
@@ -196,17 +192,14 @@ public class BookServiceImpl implements BookService {
 					}
 				}
 
-				for (String authorId : bookRequest.getAuthorIds()) {
-					objAuthor = authorRepository.findById(authorId).orElse(null);
+					objAuthor = authorRepository.findById(bookRequest.getAuthorId()).orElse(null);
 					if (objAuthor != null) {
-						objBeanAuthor.setId(authorId);
+						objBeanAuthor.setId(objAuthor.getId());
 						objBeanAuthor.setName(objAuthor.getName());
-						listAuthors.add(objBeanAuthor);
 					} else {
 						bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 						return bookResponse;
 					}
-				}
 
 				if (!bookRequest.getImage().isEmpty()) {
 					ResponseEntity<String> deleteImageResponse = storageService
@@ -220,12 +213,12 @@ public class BookServiceImpl implements BookService {
 						bookResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
 						return bookResponse;
 					}
-					BookImageResponse bookImageResponse = responseToEntity(objBookImage.getData());
+					ObjBeanBookImage bookImageResponse = responseToEntity(objBookImage.getData());
 					book.setImage(bookImageResponse);
 				}
 
 				book.setCategories(listCategories);
-				book.setAuthors(listAuthors);
+				book.setAuthor(objBeanAuthor);
 				book = bookRepository.save(book);
 				if (book != null) {
 					BeanUtils.copyProperties(book, objBook);
@@ -287,7 +280,9 @@ public class BookServiceImpl implements BookService {
 		try {
 			Author author = authorRepository.findById(id).orElse(null);
 			if (author != null) {
-				List<Book> books = bookRepository.findByAuthors(author);
+				ObjBeanAuthor objAuthor = new ObjBeanAuthor(author.getId(),author.getName());
+				String authorId = "ObjectId(\"" + id + "\")";
+				List<Book> books = bookRepository.findByAuthor(objAuthor);
 				for (Book book : books) {
 					ObjBook objBook = new ObjBook();
 					BeanUtils.copyProperties(book, objBook);
@@ -345,8 +340,8 @@ public class BookServiceImpl implements BookService {
 		}
 	}
 
-	private BookImageResponse responseToEntity(Map<String, Object> response) {
-		BookImageResponse bookImageResponse = new BookImageResponse();
+	private ObjBeanBookImage responseToEntity(Map<String, Object> response) {
+		ObjBeanBookImage bookImageResponse = new ObjBeanBookImage();
 		bookImageResponse.setDeletehash((String) response.get("deletehash"));
 		bookImageResponse.setName((String) response.get("name"));
 		bookImageResponse.setLink((String) response.get("link"));
