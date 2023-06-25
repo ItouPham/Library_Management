@@ -19,13 +19,13 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import com.api.Library_Management.entity.Author;
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.entity.Category;
-import com.api.Library_Management.model.bean.ObjBeanBookImage;
+import com.api.Library_Management.model.bean.ObjBeanImage;
 import com.api.Library_Management.model.bean.ObjBeanAuthor;
 import com.api.Library_Management.model.request.BookRequest;
 import com.api.Library_Management.model.response.book.BookResponse;
 import com.api.Library_Management.model.response.book.ListBookResponse;
 import com.api.Library_Management.model.response.book.ObjBook;
-import com.api.Library_Management.model.response.book.ObjBookImage;
+import com.api.Library_Management.model.response.image.ObjImage;
 import com.api.Library_Management.repository.AuthorRepository;
 import com.api.Library_Management.repository.BookRepository;
 import com.api.Library_Management.repository.CategoryRepository;
@@ -133,19 +133,18 @@ public class BookServiceImpl implements BookService {
 				if (objAuthor != null) {
 					objBeanAuthor.setId(objAuthor.getId());
 					objBeanAuthor.setName(objAuthor.getName());
-					;
 				} else {
 					bookResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
 					return bookResponse;
 				}
 
 				if (!bookRequest.getImage().isEmpty()) {
-					ObjBookImage objBookImage = storageService.postImageToImgur(bookRequest.getImage(), bookRequest);
+					ObjImage objBookImage = storageService.postImageToImgur(bookRequest.getImage(),bookRequest.getName(), "BOOK");
 					if (objBookImage.getStatus() != 200) {
 						bookResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
 						return bookResponse;
 					}
-					ObjBeanBookImage bookImageResponse = responseToEntity(objBookImage.getData());
+					ObjBeanImage bookImageResponse = responseToEntity(objBookImage.getData());
 					savedBook.setImage(bookImageResponse);
 				}
 				savedBook.setCreatedDate(DateUtil.formatDate(ZonedDateTime.now()));
@@ -208,12 +207,12 @@ public class BookServiceImpl implements BookService {
 						bookResponse.setMessage(Logs.DELETE_IMAGE_UNSUCCESS.getMessage());
 						return bookResponse;
 					}
-					ObjBookImage objBookImage = storageService.postImageToImgur(bookRequest.getImage(), bookRequest);
+					ObjImage objBookImage = storageService.postImageToImgur(bookRequest.getImage(), bookRequest.getName(), "BOOK");
 					if (objBookImage.getStatus() != 200) {
 						bookResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
 						return bookResponse;
 					}
-					ObjBeanBookImage bookImageResponse = responseToEntity(objBookImage.getData());
+					ObjBeanImage bookImageResponse = responseToEntity(objBookImage.getData());
 					book.setImage(bookImageResponse);
 				}
 
@@ -280,9 +279,7 @@ public class BookServiceImpl implements BookService {
 		try {
 			Author author = authorRepository.findById(id).orElse(null);
 			if (author != null) {
-				ObjBeanAuthor objAuthor = new ObjBeanAuthor(author.getId(),author.getName());
-				String authorId = "ObjectId(\"" + id + "\")";
-				List<Book> books = bookRepository.findByAuthor(objAuthor);
+				List<Book> books = bookRepository.findByAuthorId(id);
 				for (Book book : books) {
 					ObjBook objBook = new ObjBook();
 					BeanUtils.copyProperties(book, objBook);
@@ -340,8 +337,8 @@ public class BookServiceImpl implements BookService {
 		}
 	}
 
-	private ObjBeanBookImage responseToEntity(Map<String, Object> response) {
-		ObjBeanBookImage bookImageResponse = new ObjBeanBookImage();
+	private ObjBeanImage responseToEntity(Map<String, Object> response) {
+		ObjBeanImage bookImageResponse = new ObjBeanImage();
 		bookImageResponse.setDeletehash((String) response.get("deletehash"));
 		bookImageResponse.setName((String) response.get("name"));
 		bookImageResponse.setLink((String) response.get("link"));

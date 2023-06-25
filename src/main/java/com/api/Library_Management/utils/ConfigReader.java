@@ -10,6 +10,7 @@ public class ConfigReader {
 	public static String BOOK_IMAGE_PATH_STR;
 	public static String AUTHORIZATION_TOKEN;
 	public static String ALBUM_ID;
+	public static String ALBUM_AUTHOR_ID;
 	public static String POST_BOOK_IMAGE_URL;
 	public static String GET_BOOK_IMAGE_URL;
 	public static String DELETE_BOOK_IMAGE_URL;
@@ -29,6 +30,11 @@ public class ConfigReader {
 	@Value("${album.id}")
 	private void setAlbumId(String id) {
 		ConfigReader.ALBUM_ID = id;
+	}
+	
+	@Value("${album.author.id}")
+	private void setAlbumAuthorId(String id) {
+		ConfigReader.ALBUM_AUTHOR_ID = id;
 	}
 
 	@Value("${post.book.image.url}")

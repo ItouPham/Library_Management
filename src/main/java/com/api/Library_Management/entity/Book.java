@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.api.Library_Management.model.bean.ObjBeanBookImage;
+import com.api.Library_Management.model.bean.ObjBeanImage;
 import com.api.Library_Management.model.bean.ObjBeanAuthor;
 
 import lombok.AllArgsConstructor;
@@ -33,7 +33,7 @@ public class Book {
 	
 	private String createdDate;
 	
-	private ObjBeanBookImage image;
+	private ObjBeanImage image;
 	
 	private String bookCover;
 	

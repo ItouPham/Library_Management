@@ -26,7 +26,7 @@ import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.exception.StorageException;
 import com.api.Library_Management.exception.StorageFileNotFoundException;
 import com.api.Library_Management.model.request.BookRequest;
-import com.api.Library_Management.model.response.book.ObjBookImage;
+import com.api.Library_Management.model.response.image.ObjImage;
 import com.api.Library_Management.service.StorageService;
 import com.api.Library_Management.utils.ConfigReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,7 +112,7 @@ public class StorageServiceImpl implements StorageService{
 	}
 
 	@Override
-	public ObjBookImage postImageToImgur(MultipartFile file, BookRequest request) throws IOException {
+	public ObjImage postImageToImgur(MultipartFile file, String name, String type) throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		RestTemplate restTemplate = new RestTemplate();
 		String url = ConfigReader.POST_BOOK_IMAGE_URL;
@@ -121,11 +121,11 @@ public class StorageServiceImpl implements StorageService{
 		httpHeaders.set("Authorization", ConfigReader.AUTHORIZATION_TOKEN);
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		body.add("image", file.getBytes());
-		body.add("album", ConfigReader.ALBUM_ID);
-		body.add("name", request.getName());
+		body.add("album", type.equals("BOOK") ? ConfigReader.ALBUM_ID : ConfigReader.ALBUM_AUTHOR_ID);
+		body.add("name", name);
 		HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, httpHeaders);
 		ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-		ObjBookImage bookImageResponse = objectMapper.readValue(response.getBody(), ObjBookImage.class);
+		ObjImage bookImageResponse = objectMapper.readValue(response.getBody(), ObjImage.class);
 		return bookImageResponse;
 	}
 

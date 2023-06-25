@@ -2,6 +2,7 @@ package com.api.Library_Management.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,16 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import com.api.Library_Management.entity.Author;
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.model.bean.ObjBeanAuthor;
+import com.api.Library_Management.model.bean.ObjBeanImage;
 import com.api.Library_Management.model.request.AuthorRequest;
 import com.api.Library_Management.model.response.author.AuthorResponse;
 import com.api.Library_Management.model.response.author.ListAuthorResponse;
 import com.api.Library_Management.model.response.author.ObjAuthor;
+import com.api.Library_Management.model.response.image.ObjImage;
 import com.api.Library_Management.repository.AuthorRepository;
 import com.api.Library_Management.repository.BookRepository;
 import com.api.Library_Management.service.AuthorService;
+import com.api.Library_Management.service.StorageService;
 import com.api.Library_Management.utils.Logs;
 
 @Service
@@ -28,6 +32,9 @@ public class AuthorServiceImpl implements AuthorService {
 
 	@Autowired
 	private BookRepository bookRepository;
+	
+	@Autowired
+	private StorageService storageService;
 
 	@Override
 	public ListAuthorResponse getAllAuthors() {
@@ -88,6 +95,15 @@ public class AuthorServiceImpl implements AuthorService {
 				return authorResponse;
 			} else {				
 				BeanUtils.copyProperties(authorRequest, savedAuthor);
+				if (!authorRequest.getAvatar().isEmpty()) {
+					ObjImage objImage = storageService.postImageToImgur(authorRequest.getAvatar(),authorRequest.getName(), "AUTHOR");
+					if (objImage.getStatus() != 200) {
+						authorResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
+						return authorResponse;
+					}
+					ObjBeanImage imageResponse = responseToEntity(objImage.getData());
+					savedAuthor.setAvatar(imageResponse);
+				}
 				savedAuthor = authorRepository.save(savedAuthor);
 				if(savedAuthor != null) {
 					BeanUtils.copyProperties(savedAuthor, objAuthor);
@@ -167,6 +183,14 @@ public class AuthorServiceImpl implements AuthorService {
 			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
 			return authorResponse;
 		}
+	}
+	
+	private ObjBeanImage responseToEntity(Map<String, Object> response) {
+		ObjBeanImage imageResponse = new ObjBeanImage();
+		imageResponse.setDeletehash((String) response.get("deletehash"));
+		imageResponse.setName((String) response.get("name"));
+		imageResponse.setLink((String) response.get("link"));
+		return imageResponse;
 	}
 
 }

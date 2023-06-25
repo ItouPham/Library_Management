@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.model.request.BookRequest;
-import com.api.Library_Management.model.response.book.ObjBookImage;
+import com.api.Library_Management.model.response.image.ObjImage;
 
 public interface StorageService {
 	void init();
@@ -28,7 +28,7 @@ public interface StorageService {
 	
 	Path getImage(String fileName);
 	
-	ObjBookImage postImageToImgur(MultipartFile file, BookRequest request) throws IOException ;
+	ObjImage postImageToImgur(MultipartFile file, String name, String type) throws IOException ;
 	
 	ResponseEntity<String> deleteImageFromImgur(String deletehash);
 }

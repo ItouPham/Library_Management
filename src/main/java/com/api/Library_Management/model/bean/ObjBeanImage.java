@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ObjBeanBookImage {
+public class ObjBeanImage {
 	private String name;
 	private String deletehash;
 	private String link;
