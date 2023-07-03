@@ -13,8 +13,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Document(collection = "books")
 public class Book {
 

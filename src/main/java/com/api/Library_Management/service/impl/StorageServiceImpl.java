@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.api.Library_Management.entity.Book;
 import com.api.Library_Management.exception.StorageException;
 import com.api.Library_Management.exception.StorageFileNotFoundException;
+import com.api.Library_Management.model.bean.ObjBeanImage;
 import com.api.Library_Management.model.request.BookRequest;
 import com.api.Library_Management.model.response.image.ObjImage;
 import com.api.Library_Management.service.StorageService;
@@ -112,7 +114,7 @@ public class StorageServiceImpl implements StorageService{
 	}
 
 	@Override
-	public ObjImage postImageToImgur(MultipartFile file, String name, String type) throws IOException {
+	public ObjImage postImageToImgur(MultipartFile file, String name, String type) throws IOException{
 		ObjectMapper objectMapper = new ObjectMapper();
 		RestTemplate restTemplate = new RestTemplate();
 		String url = ConfigReader.POST_BOOK_IMAGE_URL;
@@ -138,5 +140,13 @@ public class StorageServiceImpl implements StorageService{
 		HttpEntity<Object> entity = new HttpEntity<Object>(httpHeaders);
 		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE , entity, String.class);
 		return response;
+	}
+	@Override
+	public ObjBeanImage responseToEntity(Map<String, Object> response) {
+		ObjBeanImage imageResponse = new ObjBeanImage();
+		imageResponse.setDeletehash((String) response.get("deletehash"));
+		imageResponse.setName((String) response.get("name"));
+		imageResponse.setLink((String) response.get("link"));
+		return imageResponse;
 	}
 }

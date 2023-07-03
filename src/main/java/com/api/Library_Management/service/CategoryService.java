@@ -1,5 +1,7 @@
 package com.api.Library_Management.service;
 
+import org.springframework.http.ResponseEntity;
+
 import com.api.Library_Management.model.request.CategoryRequest;
 import com.api.Library_Management.model.response.category.CategoryResponse;
 import com.api.Library_Management.model.response.category.ListCategoriesResponse;
@@ -8,12 +10,12 @@ public interface CategoryService {
 
 	ListCategoriesResponse getAllCategories();
 
-	CategoryResponse getCategoryById(String id);
+	ResponseEntity<?> getCategoryById(String id);
 
-	CategoryResponse createNewCategory(CategoryRequest authorRequest);
+	ResponseEntity<?> createNewCategory(CategoryRequest authorRequest);
 
-	CategoryResponse editCategory(String id, CategoryRequest authorRequest);
+	ResponseEntity<?> editCategory(String id, CategoryRequest authorRequest);
 
-	CategoryResponse deleteCategory(String id);
+	ResponseEntity<?> deleteCategory(String id);
 
 }

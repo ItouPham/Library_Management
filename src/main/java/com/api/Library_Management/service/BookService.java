@@ -1,5 +1,7 @@
 package com.api.Library_Management.service;
 
+import java.io.IOException;
+
 import org.springframework.http.ResponseEntity;
 
 import com.api.Library_Management.model.request.BookRequest;
@@ -12,13 +14,13 @@ public interface BookService {
 
 	ResponseEntity<?> getBookById(String id);
 
-	BookResponse createNewBook(BookRequest bookRequest);
+	ResponseEntity<?> createNewBook(BookRequest bookRequest) throws IOException ;
 
-	BookResponse editBook(String id, BookRequest bookRequest);
+	ResponseEntity<?> editBook(String id, BookRequest bookRequest) throws IOException;
 
-	BookResponse deleteBook(String id);
+	ResponseEntity<?> deleteBook(String id);
 
-	ListBookResponse getBooksByAuthorId(String id);
+	ResponseEntity<?>  getBooksByAuthorId(String id);
 
 	ResponseEntity<?> getBooksByCategoryId(String id, int page, int size);
 }

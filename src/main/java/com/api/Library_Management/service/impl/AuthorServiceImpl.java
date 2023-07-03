@@ -1,23 +1,20 @@
 package com.api.Library_Management.service.impl;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.api.Library_Management.entity.Author;
-import com.api.Library_Management.entity.Book;
-import com.api.Library_Management.model.bean.ObjBeanAuthor;
 import com.api.Library_Management.model.bean.ObjBeanImage;
 import com.api.Library_Management.model.request.AuthorRequest;
 import com.api.Library_Management.model.response.author.AuthorResponse;
 import com.api.Library_Management.model.response.author.ListAuthorResponse;
-import com.api.Library_Management.model.response.author.ObjAuthor;
 import com.api.Library_Management.model.response.image.ObjImage;
 import com.api.Library_Management.repository.AuthorRepository;
 import com.api.Library_Management.repository.BookRepository;
@@ -32,165 +29,121 @@ public class AuthorServiceImpl implements AuthorService {
 
 	@Autowired
 	private BookRepository bookRepository;
-	
+
 	@Autowired
 	private StorageService storageService;
 
 	@Override
 	public ListAuthorResponse getAllAuthors() {
+		List<Author> listAuthors = authorRepository.findAll();
 		ListAuthorResponse authorResponse = new ListAuthorResponse();
-		List<ObjAuthor> listAuthorResponse = new ArrayList<>();
-		List<Author> listAuthors = new ArrayList<>();
-		try {
-			listAuthors = authorRepository.findAll();
-			if (listAuthors != null && listAuthors.size() > 0) {
-				for (Author author : listAuthors) {
-					ObjAuthor objAuthor = new ObjAuthor();
-					BeanUtils.copyProperties(author, objAuthor);
-					listAuthorResponse.add(objAuthor);
-				}
-				authorResponse.setAuthors(listAuthorResponse);
-				authorResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
-			}
-			return authorResponse;
-		} catch (Exception e) {
-			e.printStackTrace();
-			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return authorResponse;
+		authorResponse.setAuthors(listAuthors);
+		authorResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
+		return authorResponse;
+	}
+
+	@Override
+	public ResponseEntity<?> getAuthorById(String id) {
+		AuthorResponse authorResponse = new AuthorResponse();
+		Author author = authorRepository.findById(id).orElse(null);
+		if (author != null) {
+			authorResponse.setAuthor(author);
+			authorResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
+			return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.OK);
+		} else {
+			String message = Logs.AUTHOR_NOT_EXIST.getMessage().replace("%ID%", id);
+			authorResponse.setMessage(message);
+			return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.NO_CONTENT);
 		}
 	}
 
 	@Override
-	public AuthorResponse getAuthorById(String id) {
+	@Transactional
+	public ResponseEntity<?> createNewAuthor(AuthorRequest authorRequest) throws IOException {
 		AuthorResponse authorResponse = new AuthorResponse();
-		ObjAuthor objAuthor = new ObjAuthor();
-		Author author = new Author();
-		try {
-			author = authorRepository.findById(id).orElse(null);
-			if (author != null) {
-				BeanUtils.copyProperties(author, objAuthor);
-				authorResponse.setAuthor(objAuthor);
-				authorResponse.setMessage(Logs.GET_DATA_SUCCESS.getMessage());
+		Author author = authorRepository.findByName(authorRequest.getName()).orElse(null);
+		if (author != null) {
+			authorResponse.setMessage(Logs.AUTHOR_HAS_EXISTED.getMessage());
+			return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.CONFLICT);
+		} else {
+			Author savedAuthor = new Author();
+			BeanUtils.copyProperties(authorRequest, savedAuthor);
+			if (!authorRequest.getAvatar().isEmpty()) {
+				ObjImage objImage = storageService.postImageToImgur(authorRequest.getAvatar(), authorRequest.getName(),
+						"AUTHOR");
+				if (objImage.getStatus() != 200) {
+					authorResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
+					return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				ObjBeanImage imageResponse = storageService.responseToEntity(objImage.getData());
+				savedAuthor.setAvatar(imageResponse);
+			}
+			savedAuthor = authorRepository.save(savedAuthor);
+			if (savedAuthor != null) {
+				authorResponse.setAuthor(savedAuthor);
+				authorResponse.setMessage(Logs.ADD_AUTHOR_SUCCESS.getMessage());
+				return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.CREATED);
 			} else {
-				authorResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
+				authorResponse.setMessage(Logs.ADD_AUTHOR_UNSUCCESS.getMessage());
+				return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-			return authorResponse;
-		} catch (Exception e) {
-			e.printStackTrace();
-			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return authorResponse;
 		}
 	}
 
 	@Override
 	@Transactional
-	public AuthorResponse createNewAuthor(AuthorRequest authorRequest) {
+	public ResponseEntity<?> editAuthor(String id, AuthorRequest authorRequest) throws IOException {
 		AuthorResponse authorResponse = new AuthorResponse();
-		ObjAuthor objAuthor = new ObjAuthor();
-		Author savedAuthor = new Author();
-		try {
-			Author author = authorRepository.findByName(authorRequest.getName()).orElse(null);
-			if(author != null) {
-				authorResponse.setMessage(Logs.AUTHOR_HAS_EXISTED.getMessage());
-				return authorResponse;
-			} else {				
-				BeanUtils.copyProperties(authorRequest, savedAuthor);
-				if (!authorRequest.getAvatar().isEmpty()) {
-					ObjImage objImage = storageService.postImageToImgur(authorRequest.getAvatar(),authorRequest.getName(), "AUTHOR");
-					if (objImage.getStatus() != 200) {
-						authorResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
-						return authorResponse;
-					}
-					ObjBeanImage imageResponse = responseToEntity(objImage.getData());
-					savedAuthor.setAvatar(imageResponse);
+		Author author = authorRepository.findById(id).orElse(null);
+		if (author != null) {
+			BeanUtils.copyProperties(authorRequest, author);
+			if (!authorRequest.getAvatar().isEmpty()) {
+				ResponseEntity<String> deleteImageResponse = storageService
+						.deleteImageFromImgur(author.getAvatar().getDeletehash());
+				if (deleteImageResponse.getStatusCodeValue() != 200) {
+					authorResponse.setMessage(Logs.DELETE_IMAGE_UNSUCCESS.getMessage());
+					return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-				savedAuthor = authorRepository.save(savedAuthor);
-				if(savedAuthor != null) {
-					BeanUtils.copyProperties(savedAuthor, objAuthor);
-					authorResponse.setAuthor(objAuthor);
-					authorResponse.setMessage(Logs.ADD_AUTHOR_SUCCESS.getMessage());					
-				} else {
-					authorResponse.setMessage(Logs.ADD_AUTHOR_UNSUCCESS.getMessage());
+				ObjImage objBookImage = storageService.postImageToImgur(authorRequest.getAvatar(),
+						authorRequest.getName(), "AUTHOR");
+				if (objBookImage.getStatus() != 200) {
+					authorResponse.setMessage(Logs.UPLOAD_IMAGE_UNSUCCESS.getMessage());
+					return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
+				ObjBeanImage bookImageResponse = storageService.responseToEntity(objBookImage.getData());
+				author.setAvatar(bookImageResponse);
 			}
-			return authorResponse;
-		} catch (Exception e) {
-			e.printStackTrace();
-			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return authorResponse;
-		}
-	}
-
-	@Override
-	@Transactional
-	public AuthorResponse editAuthor(String id, AuthorRequest authorRequest) {
-		AuthorResponse authorResponse = new AuthorResponse();
-		ObjAuthor objAuthor = new ObjAuthor();
-		Author author = new Author();
-		try {
-			author = authorRepository.findById(id).orElse(null);
+			author = authorRepository.save(author);
 			if (author != null) {
-				BeanUtils.copyProperties(authorRequest, author);
-				BeanUtils.copyProperties(author, objAuthor);
-				authorRepository.save(author);
-				authorResponse.setAuthor(objAuthor);
+				authorResponse.setAuthor(author);
 				authorResponse.setMessage(Logs.UPDATE_AUTHOR_SUCCESS.getMessage());
+				return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.OK);
 			} else {
-				authorResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
+				authorResponse.setMessage(Logs.UPDATE_AUTHOR_UNSUCCESS.getMessage());
+				return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-			return authorResponse;
-		} catch (Exception e) {
-			e.printStackTrace();
-			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return authorResponse;
+		} else {
+			String message = Logs.AUTHOR_NOT_EXIST.getMessage().replace("%ID%", id);
+			authorResponse.setMessage(message);
+			return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.NO_CONTENT);
 		}
 	}
 
 	@Override
 	@Transactional
-	public AuthorResponse deleteAuthor(String id) {
+	public ResponseEntity<?> deleteAuthor(String id) {
 		AuthorResponse authorResponse = new AuthorResponse();
-		ObjAuthor objAuthor = new ObjAuthor();
-		Author author = new Author();
-		try {
-			author = authorRepository.findById(id).orElse(null);
-			if (author != null) {
-				ObjBeanAuthor objBeanAuthor = new ObjBeanAuthor(author.getId(),author.getName());
-//				List<Book> books = bookRepository.findByAuthorName(id);
-				List<Book> books = null;
-				if (books != null) {
-					for (Book book : books) {
-//						book.getAuthors().removeIf(a -> a.getId().equals(id));
-						if(book.getAuthor().getId().equals(id)) {
-							book.setAuthor(new ObjBeanAuthor("",""));
-						}
-					}
-					bookRepository.saveAll(books);
-				}
-				BeanUtils.copyProperties(author, objAuthor);
-				authorRepository.delete(author);
-				authorResponse.setAuthor(objAuthor);
-				authorResponse.setMessage(Logs.DELETE_AUTHOR_SUCCESS.getMessage());
-			} else {
-				authorResponse.setMessage(Logs.AUTHOR_NOT_EXIST.getMessage());
-			}
-			return authorResponse;
-		} catch (Exception e) {
-			e.printStackTrace();
-			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			authorResponse.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return authorResponse;
+		Author author = authorRepository.findById(id).orElse(null);
+		if (author != null) {
+			authorRepository.delete(author);
+			authorResponse.setAuthor(null);
+			authorResponse.setMessage(Logs.DELETE_AUTHOR_SUCCESS.getMessage());
+			return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.OK);
+		} else {
+			String message = Logs.AUTHOR_NOT_EXIST.getMessage().replace("%ID%", id);
+			authorResponse.setMessage(message);
+			return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.NO_CONTENT);
 		}
-	}
-	
-	private ObjBeanImage responseToEntity(Map<String, Object> response) {
-		ObjBeanImage imageResponse = new ObjBeanImage();
-		imageResponse.setDeletehash((String) response.get("deletehash"));
-		imageResponse.setName((String) response.get("name"));
-		imageResponse.setLink((String) response.get("link"));
-		return imageResponse;
 	}
 
 }

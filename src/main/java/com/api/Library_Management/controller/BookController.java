@@ -3,6 +3,7 @@ package com.api.Library_Management.controller;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -41,17 +42,11 @@ public class BookController {
 	private StorageService storageService;
 
 	@GetMapping
-	public ResponseEntity<ListBookResponse> getAllBooks(@RequestParam(defaultValue = "0") int page,
+	public ResponseEntity<?> getAllBooks(@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) {
-		ListBookResponse objBooks = new ListBookResponse();
-		try {
-			objBooks = bookService.getAllBooks(page, size);
-			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objBooks.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
-		}
+
+		ListBookResponse objBooks = bookService.getAllBooks(page, size);
+		return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
 	}
 
 	@GetMapping("getById/{id}")
@@ -60,68 +55,42 @@ public class BookController {
 	}
 
 	@PostMapping
-	public ResponseEntity<BookResponse> createNewBook(@ModelAttribute BookRequest bookRequest) {
-		BookResponse objBook = new BookResponse();
-		try {
-			objBook = bookService.createNewBook(bookRequest);
-			return new ResponseEntity<BookResponse>(objBook, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objBook.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<BookResponse>(objBook, HttpStatus.OK);
+	public ResponseEntity<?> createNewBook(@ModelAttribute BookRequest bookRequest) throws IOException {
+		BookResponse book = new BookResponse();
+		if(StringUtils.isEmpty(bookRequest.getName())) {
+			book.setMessage(Logs.NULL_BOOK_NAME.getMessage());
+			return new ResponseEntity<BookResponse>(book, HttpStatus.BAD_REQUEST);
 		}
+		return bookService.createNewBook(bookRequest);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<BookResponse> editBook(@PathVariable String id, @ModelAttribute BookRequest bookRequest) {
-		BookResponse objBook = new BookResponse();
-		try {
-			objBook = bookService.editBook(id, bookRequest);
-			return new ResponseEntity<BookResponse>(objBook, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objBook.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<BookResponse>(objBook, HttpStatus.OK);
+	public ResponseEntity<?> editBook(@PathVariable String id, @ModelAttribute BookRequest bookRequest)
+			throws IOException {
+		BookResponse book = new BookResponse();
+		if (StringUtils.isEmpty(bookRequest.getName())) {
+			book.setMessage(Logs.NULL_BOOK_NAME.getMessage());
+			return new ResponseEntity<BookResponse>(book, HttpStatus.BAD_REQUEST);
 		}
+		return bookService.editBook(id, bookRequest);
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<BookResponse> deleteBook(@PathVariable String id) {
-		BookResponse objBook = new BookResponse();
-		try {
-			objBook = bookService.deleteBook(id);
-			return new ResponseEntity<BookResponse>(objBook, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objBook.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<BookResponse>(objBook, HttpStatus.OK);
-		}
+	public ResponseEntity<?> deleteBook(@PathVariable String id) {
+		return bookService.deleteBook(id);
+		
 	}
 
 	@GetMapping("/author/{id}")
-	public ResponseEntity<ListBookResponse> getBooksByAuthorId(@PathVariable String id) {
-		ListBookResponse objBooks = new ListBookResponse();
-		try {
-			objBooks = bookService.getBooksByAuthorId(id);
-			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objBooks.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.OK);
-		}
+	public ResponseEntity<?> getBooksByAuthorId(@PathVariable String id) {
+		return bookService.getBooksByAuthorId(id);
+
 	}
 
 	@GetMapping("/category/{id}")
 	public ResponseEntity<?> getBooksByCategoryId(@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size, @PathVariable String id) {
-		ListBookResponse objBooks = new ListBookResponse();
-		try {
-			return bookService.getBooksByCategoryId(id,page,size);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objBooks.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<ListBookResponse>(objBooks, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return bookService.getBooksByCategoryId(id, page, size);
 	}
 
 	@GetMapping("bookImage/{fileName}")

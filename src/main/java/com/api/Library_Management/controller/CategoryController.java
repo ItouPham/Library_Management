@@ -1,5 +1,6 @@
 package com.api.Library_Management.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,69 +29,39 @@ public class CategoryController {
 	private CategoryService categoryService;
 
 	@GetMapping()
-	public ResponseEntity<ListCategoriesResponse> getAllCategories() {
-		ListCategoriesResponse listCategories = new ListCategoriesResponse();
-		try {
-			listCategories = categoryService.getAllCategories();
-			return new ResponseEntity<ListCategoriesResponse>(listCategories, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			listCategories.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<ListCategoriesResponse>(listCategories, HttpStatus.OK);
-		}
+	public ResponseEntity<?> getAllCategories() {
+		ListCategoriesResponse listCategories = categoryService.getAllCategories();
+		return new ResponseEntity<ListCategoriesResponse>(listCategories, HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable String id) {
-		CategoryResponse category = new CategoryResponse();
-		try {
-			category = categoryService.getCategoryById(id);
-			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			category.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
-		}
+	public ResponseEntity<?> getCategoryById(@PathVariable String id) {
+		return categoryService.getCategoryById(id);
 	}
 
 	@PostMapping()
-	public ResponseEntity<CategoryResponse> createNewCategory(@RequestBody CategoryRequest categoryRequest) {
-		CategoryResponse category = new CategoryResponse();
-		try {
-			category = categoryService.createNewCategory(categoryRequest);
-			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			category.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
-
+	public ResponseEntity<?> createNewCategory(@RequestBody CategoryRequest categoryRequest) {
+		CategoryResponse categoryResponse = new CategoryResponse();
+		if (StringUtils.isEmpty(categoryRequest.getName())) {
+			categoryResponse.setMessage(Logs.NULL_CATEGORY_NAME.getMessage());
+			return new ResponseEntity<CategoryResponse>(categoryResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		return categoryService.createNewCategory(categoryRequest);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<CategoryResponse> editCategory(@PathVariable String id,
-			@RequestBody CategoryRequest categoryRequest) {
-		CategoryResponse category = new CategoryResponse();
-		try {
-			category = categoryService.editCategory(id, categoryRequest);
-			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			category.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
+	public ResponseEntity<?> editCategory(@PathVariable String id, @RequestBody CategoryRequest categoryRequest) {
+		CategoryResponse categoryResponse = new CategoryResponse();
+		if (StringUtils.isEmpty(categoryRequest.getName())) {
+			categoryResponse.setMessage(Logs.NULL_CATEGORY_NAME.getMessage());
+			return new ResponseEntity<CategoryResponse>(categoryResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		return categoryService.editCategory(id, categoryRequest);
+
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<CategoryResponse> deleteCategory(@PathVariable String id) {
-		CategoryResponse category = new CategoryResponse();
-		try {
-			category = categoryService.deleteCategory(id);
-			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			category.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<CategoryResponse>(category, HttpStatus.OK);
-		}
+	public ResponseEntity<?> deleteCategory(@PathVariable String id) {
+		return categoryService.deleteCategory(id);
 	}
 }

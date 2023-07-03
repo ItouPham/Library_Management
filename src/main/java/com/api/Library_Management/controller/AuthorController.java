@@ -1,5 +1,8 @@
 package com.api.Library_Management.controller;
 
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,67 +33,38 @@ public class AuthorController {
 
 	@GetMapping()
 	public ResponseEntity<ListAuthorResponse> getAllAuthors() {
-		ListAuthorResponse objAuthor = new ListAuthorResponse();
-		try {
-			objAuthor = authorService.getAllAuthors();
-			return new ResponseEntity<ListAuthorResponse>(objAuthor, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<ListAuthorResponse>(objAuthor, HttpStatus.OK);
-		}
+		ListAuthorResponse objAuthor = authorService.getAllAuthors();
+		return new ResponseEntity<ListAuthorResponse>(objAuthor, HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<AuthorResponse> getAuthorById(@PathVariable String id) {
-		AuthorResponse objAuthor = new AuthorResponse();
-		try {
-			objAuthor = authorService.getAuthorById(id);
-			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
-		}
+	public ResponseEntity<?> getAuthorById(@PathVariable String id) {
+		return authorService.getAuthorById(id);
 	}
 
 	@PostMapping()
-	public ResponseEntity<AuthorResponse> createNewAuthor(@ModelAttribute AuthorRequest authorRequest) {
-		AuthorResponse objAuthor = new AuthorResponse();
-		try {
-			objAuthor = authorService.createNewAuthor(authorRequest);
-			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
+	public ResponseEntity<?> createNewAuthor(@ModelAttribute AuthorRequest authorRequest) throws IOException {
+		AuthorResponse authorResponse = new AuthorResponse();
+		if(StringUtils.isEmpty(authorRequest.getName())){
+			authorResponse.setMessage(Logs.NULL_AUTHOR_NAME.getMessage());
+			return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.BAD_REQUEST);
 		}
+		return authorService.createNewAuthor(authorRequest);
+
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<AuthorResponse> editAuthor(@PathVariable String id,
-			@RequestBody AuthorRequest authorRequest) {
-		AuthorResponse objAuthor = new AuthorResponse();
-		try {
-			objAuthor = authorService.editAuthor(id, authorRequest);
-			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
+	public ResponseEntity<?> editAuthor(@PathVariable String id, @ModelAttribute AuthorRequest authorRequest) throws IOException {
+		AuthorResponse authorResponse = new AuthorResponse();
+		if (StringUtils.isEmpty(authorRequest.getName())) {
+			authorResponse.setMessage(Logs.NULL_AUTHOR_NAME.getMessage());
+			return new ResponseEntity<AuthorResponse>(authorResponse, HttpStatus.BAD_REQUEST);
 		}
+		return authorService.editAuthor(id, authorRequest);
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<AuthorResponse> deleteAuthor(@PathVariable String id) {
-		AuthorResponse objAuthor = new AuthorResponse();
-		try {
-			objAuthor = authorService.deleteAuthor(id);
-			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			objAuthor.setMessage(Logs.ERROR_SYSTEM.getMessage());
-			return new ResponseEntity<AuthorResponse>(objAuthor, HttpStatus.OK);
-		}
+	public ResponseEntity<?> deleteAuthor(@PathVariable String id) {
+			return authorService.deleteAuthor(id);
 	}
 }

@@ -1,13 +1,11 @@
 package com.api.Library_Management.model.response.category;
 
-import lombok.AllArgsConstructor;
+import com.api.Library_Management.entity.Category;
+
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class CategoryResponse {
-	private ObjCategory category;
+	private Category category;
 	private String message;
 }
